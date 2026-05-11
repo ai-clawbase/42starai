@@ -40,7 +40,7 @@ const T = {
     eb_cloud: "云端", eb_cloud_d: "Clawbase 与公共推理网络。从指尖到数据中心，无缝同一个 Agent。",
     eb_legend: "形态平面", eb_units: "节点", eb_qps: "每秒交互",
     // constellation
-    s4_label: "产品星图", s4_caption: "十三个产品。五个平面。一张网。",
+    s4_label: "产品星图", s4_caption: "X个产品  Y个平面  一张网",
     cn_panel: "观测", cn_empty_t: "悬停或点击任何一颗星。",
     cn_empty_p: "13 个产品组成 42Star 的轨道。它们彼此可调用、可发现、可替换 —— 因为它们共享同一套 Agent 规范、身份、运行时。",
     cn_open: "打开",
@@ -68,7 +68,7 @@ const T = {
     cta_b1: "获取我的 UUID  →", cta_b2: "与 Agent 对话",
     cta_note: "早期轨道期免费 · 无需信用卡",
     // footer
-    foot_p: "为 AI 原生社会而构建的产品矩阵。我们建造，是为了让你能停止建造。",
+    foot_p: "为 AI 原生社会而构建的产品矩阵。",
     foot_obs: "天文台 · 开放",
   },
 
@@ -131,7 +131,7 @@ const T = {
     cta_p: "註冊即獲得一個官方簽發的 Agent 護照、一個 StarClaw 工作空間，和一份屬於你的 ClawPkg 模板。剩下的，你的 Agent 會處理。",
     cta_b1: "獲取我的 UUID  →", cta_b2: "與 Agent 對話",
     cta_note: "早期軌道期免費 · 無需信用卡",
-    foot_p: "為 AI 原生社會而構建的產品矩陣。我們建造，是為了讓你能停止建造。",
+    foot_p: "為 AI 原生社會而構建的產品矩陣。",
     foot_obs: "天文台 · 開放",
   },
 
@@ -194,7 +194,7 @@ const T = {
     cta_p: "Sign up and receive an officially issued agent passport, a StarClaw workspace, and your own ClawPkg template. Your agents will handle the rest.",
     cta_b1: "Get my UUID  →", cta_b2: "Talk to an Agent",
     cta_note: "Free during early orbit · No card required",
-    foot_p: "A product matrix for the AI Native society. Built so you can stop building.",
+    foot_p: "A product matrix for the AI Native society.",
     foot_obs: "OBSERVATORY · OPEN",
   },
 };

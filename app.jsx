@@ -105,7 +105,7 @@ function Footer() {
       </div>
       <hr className="hairline" style={{margin: "48px 0 24px"}}/>
       <div className="foot-bot mono dim">
-        <span>© 2042–∞  42Star.ai  ·  Beijing · Hangzhou · Orbit</span>
+        <span>© 2042–∞  42Star.ai  ·  Chengdu · Hangzhou · Orbit</span>
         <span>v0.42.0</span>
         <span>Privacy · Terms · Charter</span>
       </div>
