@@ -252,7 +252,7 @@ const TP = {
     "en":    { tag: "Agent passport", pitch: "Officially issued identity. Every inference, every call — verifiable." },
   },
   clawlego: {
-    "zh-CN": { tag: "Agent 商店", pitch: "ClawTpl 模板 + ClawMod 模块。Agent 时代的应用商店。" },
+    "zh-CN": { tag: "Agent 商店", pitch: "ClawTpl 模板 + ClawMod 模块。Agent 时代的智能分发商店。" },
     "zh-TW": { tag: "Agent 商店", pitch: "ClawTpl 模板 + ClawMod 模組。Agent 時代的應用商店。" },
     "en":    { tag: "Agent marketplace", pitch: "ClawTpl templates + ClawMod modules. The app store of the agent era." },
   },

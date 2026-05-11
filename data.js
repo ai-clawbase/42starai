@@ -85,7 +85,7 @@ const PRODUCTS = [
   {
     id: "clawlego", code: "ST-03", plane: "standard", form: "marketplace",
     name: "ClawLego", tag: "Agent 商店",
-    pitch: "ClawTpl 模板 + ClawMod 模块。Agent 时代的应用商店。",
+    pitch: "ClawTpl 模板 + ClawMod 模块。Agent 时代的智能分发商店。",
     long: "公共的 Agent 模板与模块市场，让构建 Agent 像拼乐高一样。",
     stat: "1,204 templates · 8,932 mods",
     coord: { x: 42, y: 88 },
