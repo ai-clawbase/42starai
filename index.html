@@ -1,0 +1,1800 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>42Star.ai — The Cyber-Self Society</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* === 42Star.ai — design tokens === */
+:root {
+  --bg-0: oklch(0.13 0.014 270);          /* deep space */
+  --bg-1: oklch(0.17 0.018 270);          /* lifted surface */
+  --bg-2: oklch(0.21 0.022 270);          /* card */
+  --line: oklch(0.30 0.018 270 / 0.55);   /* hairline */
+  --line-strong: oklch(0.42 0.024 270);   /* visible border */
+  --fg: oklch(0.96 0.012 90);             /* warm white */
+  --fg-dim: oklch(0.72 0.014 90);
+  --fg-mute: oklch(0.52 0.014 90);
+  --cyan: oklch(0.82 0.16 200);           /* signature accent */
+  --cyan-soft: oklch(0.82 0.16 200 / 0.18);
+  --amber: oklch(0.78 0.16 60);           /* warm accent */
+  --amber-soft: oklch(0.78 0.16 60 / 0.16);
+  --violet: oklch(0.72 0.16 300);
+  --danger: oklch(0.72 0.20 25);
+
+  --f-display: "Instrument Serif", "Times New Roman", serif;
+  --f-sans: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg-0); color: var(--fg); }
+body {
+  font-family: var(--f-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* === ambient background — starfield + scanline + grid === */
+.ambient {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 10%, oklch(0.82 0.16 200 / 0.08), transparent 50%),
+    radial-gradient(ellipse at 85% 75%, oklch(0.78 0.16 60 / 0.06), transparent 55%),
+    var(--bg-0);
+}
+.ambient::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 80%);
+  opacity: 0.35;
+}
+.ambient::after {
+  /* subtle scanlines */
+  content: "";
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    oklch(1 0 0 / 0.012) 3px,
+    oklch(1 0 0 / 0.012) 4px
+  );
+  pointer-events: none;
+}
+
+.stars { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.stars svg { width: 100%; height: 100%; }
+
+/* === page chrome === */
+main { position: relative; z-index: 2; }
+section { position: relative; padding: 96px 48px; max-width: 1440px; margin: 0 auto; }
+@media (max-width: 720px) { section { padding: 56px 20px; } }
+
+/* === reusable === */
+.mono { font-family: var(--f-mono); letter-spacing: 0.02em; }
+.serif { font-family: var(--f-display); font-style: italic; font-weight: 400; }
+.dim { color: var(--fg-dim); }
+.mute { color: var(--fg-mute); }
+.cyan { color: var(--cyan); }
+.amber { color: var(--amber); }
+.upper { text-transform: uppercase; letter-spacing: 0.18em; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--f-mono); font-size: 11px;
+  color: var(--fg-dim);
+  text-transform: uppercase; letter-spacing: 0.22em;
+  padding: 6px 10px;
+  border: 1px solid var(--line-strong);
+  background: oklch(0.17 0.018 270 / 0.6);
+  border-radius: 2px;
+}
+.tag .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+  animation: pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.85); }
+}
+
+.crosshair {
+  position: absolute; width: 12px; height: 12px;
+  border: 1px solid var(--cyan); opacity: 0.6;
+}
+.crosshair::before, .crosshair::after {
+  content: ""; position: absolute; background: var(--cyan);
+}
+.crosshair::before { left: 50%; top: -4px; bottom: -4px; width: 1px; }
+.crosshair::after  { top: 50%; left: -4px; right: -4px; height: 1px; }
+
+.hairline { height: 1px; background: var(--line-strong); border: 0; margin: 0; }
+
+button.cta {
+  font-family: var(--f-mono); font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.22em;
+  padding: 14px 22px; border: 1px solid var(--cyan);
+  background: oklch(0.82 0.16 200 / 0.08);
+  color: var(--cyan); cursor: pointer;
+  transition: all 160ms ease;
+  border-radius: 2px;
+}
+button.cta:hover { background: var(--cyan); color: var(--bg-0); box-shadow: 0 0 24px oklch(0.82 0.16 200 / 0.5); }
+
+button.cta.ghost { border-color: var(--line-strong); color: var(--fg-dim); background: transparent; }
+button.cta.ghost:hover { border-color: var(--fg); color: var(--fg); background: oklch(1 0 0 / 0.04); box-shadow: none; }
+
+/* shared blink caret */
+.caret { display: inline-block; width: 0.55em; height: 1em; background: var(--cyan); vertical-align: -2px; margin-left: 4px; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+
+/* === topnav === */
+.topnav {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  background: oklch(0.13 0.014 270 / 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; color: var(--cyan); }
+.brand-text { font-family: var(--f-sans); font-weight: 500; font-size: 16px; letter-spacing: 0.02em; color: var(--fg); }
+.brand-num { font-family: var(--f-display); font-style: italic; font-size: 20px; color: var(--cyan); margin-right: 1px; }
+.nav-links { display: flex; gap: 28px; }
+.nav-links a {
+  font-family: var(--f-mono); font-size: 12px; text-transform: uppercase;
+  letter-spacing: 0.18em; color: var(--fg-dim); text-decoration: none;
+  padding: 4px 0; border-bottom: 1px solid transparent;
+  transition: color 160ms, border-color 160ms;
+}
+.nav-links a:hover { color: var(--fg); border-bottom-color: var(--cyan); }
+.nav-right { display: flex; align-items: center; gap: 18px; }
+
+/* === product mega-menu === */
+.nav-prod { position: relative; display: flex; align-items: center; }
+.nav-prod > a {
+  font-family: var(--f-mono); font-size: 12px; text-transform: uppercase;
+  letter-spacing: 0.18em; color: var(--fg-dim); text-decoration: none;
+  padding: 4px 0; border-bottom: 1px solid transparent;
+  transition: color 160ms, border-color 160ms;
+}
+.nav-prod.is-open > a,
+.nav-prod > a:hover { color: var(--fg); border-bottom-color: var(--cyan); }
+
+.prod-fly {
+  position: absolute;
+  top: calc(100% + 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  width: 820px;
+  background: oklch(0.155 0.018 270 / 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--line-strong);
+  padding: 24px 20px 20px;
+  box-shadow: 0 32px 80px oklch(0 0 0 / 0.55), 0 0 0 1px oklch(0.82 0.16 200 / 0.05);
+  pointer-events: auto;
+}
+.prod-fly::before {
+  content: "";
+  position: absolute;
+  top: -5px; left: 50%; transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 5px solid var(--line-strong);
+}
+.prod-fly-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+.prod-fly-col { background: var(--bg-1); padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 0; }
+.prod-fly-col-head {
+  font-family: var(--f-mono); font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.24em; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line); margin-bottom: 10px;
+}
+.prod-fly-items { display: flex; flex-direction: column; gap: 2px; }
+.prod-fly-item {
+  display: flex; flex-direction: column; gap: 2px;
+  text-decoration: none; padding: 7px 8px;
+  border: 1px solid transparent; border-radius: 1px;
+  transition: background 130ms, border-color 130ms;
+}
+.prod-fly-item:hover { background: var(--bg-2); border-color: var(--line-strong); }
+.prod-fly-name {
+  font-family: var(--f-display); font-style: italic; font-size: 18px;
+  line-height: 1; color: var(--fg); transition: color 130ms;
+}
+.prod-fly-item:hover .prod-fly-name { color: var(--cyan); }
+.prod-fly-tag { font-family: var(--f-mono); font-size: 9px; color: var(--fg-mute); letter-spacing: 0.08em; margin-top: 1px; }
+
+/* === hero === */
+.hero { padding-top: 64px; padding-bottom: 120px; }
+.hero-grid {
+  position: relative;
+  display: grid; grid-template-columns: 280px 1fr;
+  gap: 64px;
+  border: 1px solid var(--line-strong);
+  background: oklch(0.15 0.016 270 / 0.55);
+  padding: 48px 56px;
+}
+.hero-side { display: flex; flex-direction: column; gap: 24px; }
+.boot {
+  font-family: var(--f-mono); font-size: 12px; color: var(--fg-dim);
+  background: var(--bg-0); border: 1px solid var(--line);
+  padding: 16px; line-height: 1.9; min-height: 160px;
+}
+.boot-line { white-space: nowrap; }
+.hero-clock { font-size: 11px; line-height: 1.7; margin-top: auto; }
+
+.hero-prelude { font-size: 11px; margin-bottom: 28px; }
+.hero-title {
+  font-family: var(--f-sans); font-weight: 400;
+  font-size: clamp(48px, 7.2vw, 104px);
+  line-height: 0.95; letter-spacing: -0.02em;
+  margin: 0 0 32px;
+}
+.hero-title .serif { font-family: var(--f-display); font-style: italic; font-weight: 400; color: var(--fg-dim); }
+.forty-two {
+  font-family: var(--f-display); font-style: italic; color: var(--cyan);
+  display: inline-block; padding: 0 6px;
+  text-shadow: 0 0 24px oklch(0.82 0.16 200 / 0.4);
+}
+.under { border-bottom: 2px solid var(--cyan); padding-bottom: 2px; }
+.hero-sub { font-size: 18px; line-height: 1.6; color: var(--fg-dim); max-width: 720px; margin: 0 0 36px; }
+.hero-ctas { display: flex; gap: 12px; margin-bottom: 56px; }
+
+.hero-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 32px; border-top: 1px solid var(--line-strong); padding-top: 32px;
+}
+.stat-k { font-size: 11px; color: var(--fg-mute); margin-bottom: 8px; }
+.stat-v { font-family: var(--f-display); font-style: italic; font-size: 44px; line-height: 1; color: var(--fg); margin-bottom: 6px; }
+.stat-sub { font-size: 11px; color: var(--fg-mute); }
+
+/* === section header === */
+.sec-head { display: flex; align-items: baseline; gap: 24px; margin-bottom: 56px; }
+.sec-idx { font-family: var(--f-display); font-style: italic; font-size: 56px; color: var(--cyan); line-height: 1; }
+.sec-meta { display: flex; flex-direction: column; gap: 4px; }
+.sec-cap { font-family: var(--f-display); font-style: italic; font-size: 36px; color: var(--fg); line-height: 1.1; }
+.sec-line { flex: 1; height: 1px; background: var(--line-strong); margin-left: 24px; }
+
+/* === vision === */
+.vision-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 64px; align-items: start; }
+.vision-left h2 { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: clamp(36px, 4.5vw, 64px); line-height: 1.05; margin: 0 0 24px; }
+.vision-left p { font-size: 16px; line-height: 1.7; margin: 0 0 16px; max-width: 480px; }
+
+/* week visualizer */
+.week-vis { border: 1px solid var(--line-strong); padding: 24px; background: var(--bg-1); }
+.week-head { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 18px; }
+.week-rows { display: flex; flex-direction: column; gap: 6px; }
+.week-row { display: grid; grid-template-columns: 48px 1fr; align-items: center; gap: 12px; }
+.week-day { font-size: 11px; color: var(--fg-mute); letter-spacing: 0.18em; }
+.week-cells { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; }
+.wcell { height: 18px; background: oklch(0.18 0.012 270); }
+.wcell-life { background: oklch(0.28 0.04 60 / 0.5); }
+.wcell-active { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.week-legend { display: flex; gap: 24px; font-size: 11px; margin-top: 18px; flex-wrap: wrap; }
+.sw { display: inline-block; width: 10px; height: 10px; vertical-align: -1px; margin-right: 6px; }
+.sw-active { background: var(--cyan); }
+.sw-life { background: oklch(0.28 0.04 60 / 0.7); }
+.sw-sleep { background: oklch(0.18 0.012 270); border: 1px solid var(--line); }
+
+/* cyber-self */
+.cyber { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
+.cyber-orbits {
+  aspect-ratio: 1; max-width: 560px;
+  background: radial-gradient(circle at 50% 50%, oklch(0.18 0.018 270) 0%, transparent 70%);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+.cyber-orbits svg { width: 100%; height: 100%; display: block; }
+.cyber-meta { display: flex; flex-direction: column; gap: 28px; }
+.cyber-block { padding-left: 18px; border-left: 1px solid var(--line-strong); }
+.cyber-block .serif { margin: 6px 0 8px; }
+.cyber-block p { font-size: 14px; margin: 0; max-width: 420px; }
+
+/* === constellation === */
+.const-wrap { display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; }
+.const-map {
+  position: relative;
+  aspect-ratio: 4/3;
+  background: var(--bg-1);
+  border: 1px solid var(--line-strong);
+  overflow: hidden;
+}
+.const-map svg { width: 100%; height: 100%; display: block; }
+.const-axes { position: absolute; inset: 0; pointer-events: none; font-size: 10px; }
+.const-axes .ax { position: absolute; padding: 8px 10px; }
+.ax-tl { top: 0; left: 0; }
+.ax-tr { top: 0; right: 0; }
+.ax-bl { bottom: 0; left: 0; }
+.ax-br { bottom: 0; right: 0; }
+
+.const-panel { border: 1px solid var(--line-strong); background: var(--bg-1); padding: 24px; min-height: 360px; display: flex; flex-direction: column; }
+.const-panel-head { display: flex; justify-content: space-between; font-size: 11px; padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+.dot-cyan { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 6px var(--cyan); margin-right:8px; vertical-align: 1px; }
+.const-empty .serif { margin-bottom: 16px; }
+.const-empty p { font-size: 14px; }
+.const-legend { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.leg-row { display: flex; align-items: center; gap: 10px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; }
+.const-detail h3 { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 44px; margin: 8px 0 4px; color: var(--fg); }
+.const-detail p { font-size: 14px; line-height: 1.65; }
+.const-stat { margin-top: 16px; padding: 10px 12px; background: var(--bg-0); border: 1px solid var(--line); font-size: 11px; color: var(--fg-dim); text-transform: uppercase; letter-spacing: 0.18em; }
+
+/* === matrix === */
+.mx-list { display: flex; flex-direction: column; gap: 56px; }
+.mx-group-head { display: grid; grid-template-columns: 120px 1fr auto; gap: 24px; align-items: baseline; padding-bottom: 16px; border-bottom: 1px solid var(--line-strong); margin-bottom: 24px; }
+.mx-group-title { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 32px; color: var(--fg); }
+.mx-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); }
+.pcard {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 24px; background: var(--bg-1);
+  text-decoration: none; color: var(--fg);
+  transition: background 180ms, transform 180ms;
+  position: relative; min-height: 240px;
+}
+.pcard:hover { background: var(--bg-2); }
+.pcard-top { display: flex; justify-content: space-between; }
+.pcard-icon { color: var(--cyan); margin: 8px 0 12px; }
+.pcard-name { font-family: var(--f-display); font-style: italic; font-size: 32px; line-height: 1; color: var(--fg); }
+.pcard-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; }
+.pcard-pitch { font-size: 13px; line-height: 1.55; color: var(--fg-dim); margin: 4px 0 0; flex: 1; }
+.pcard-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px dashed var(--line); margin-top: 12px; }
+.pcard-arrow { color: var(--cyan); font-size: 16px; transition: transform 180ms; }
+.pcard:hover .pcard-arrow { transform: translateX(4px); }
+
+/* === manifesto === */
+.man-grid { display: grid; grid-template-columns: 360px 1fr; gap: 64px; align-items: start; }
+.man-art { position: sticky; top: 100px; }
+.man-art svg { width: 100%; max-width: 360px; display: block; }
+.man-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 28px; }
+.man-list li { padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.man-list li strong { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 28px; color: var(--fg); margin-left: 6px; }
+.man-list li p { margin: 8px 0 0 0; font-size: 14px; max-width: 540px; }
+.man-pullquote {
+  margin-top: 96px;
+  font-family: var(--f-display); font-style: italic; font-weight: 400;
+  font-size: clamp(28px, 3.8vw, 52px); line-height: 1.2;
+  max-width: 980px; color: var(--fg);
+  padding: 48px 0; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong);
+}
+
+/* === ctab === */
+.ctab { padding-top: 0; }
+.ctab-inner { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: end; padding: 64px; border: 1px solid var(--cyan); background: linear-gradient(135deg, oklch(0.16 0.05 200 / 0.7), oklch(0.15 0.016 270 / 0.6)); }
+.ctab-right { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+
+/* === footer === */
+.footer { max-width: 1440px; margin: 0 auto; padding: 80px 48px 40px; position: relative; z-index: 2; }
+.foot-grid { display: grid; grid-template-columns: 1.4fr repeat(5, 1fr); gap: 40px; }
+.foot-col ul { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.foot-col a { color: var(--fg-dim); text-decoration: none; font-size: 13px; }
+.foot-col a:hover { color: var(--cyan); }
+.foot-bot { display: flex; justify-content: space-between; font-size: 11px; flex-wrap: wrap; gap: 16px; }
+
+/* === responsive === */
+@media (max-width: 960px) {
+  .hero-grid { grid-template-columns: 1fr; padding: 28px; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .vision-grid, .cyber, .const-wrap, .man-grid, .ctab-inner { grid-template-columns: 1fr; gap: 32px; }
+  .nav-links { display: none; }
+  .foot-grid { grid-template-columns: 1fr 1fr; }
+  .man-art { position: relative; top: 0; max-width: 240px; margin: 0 auto; }
+  .topnav { padding: 12px 20px; }
+  .sec-cap { font-size: 24px; }
+  .sec-idx { font-size: 36px; }
+}
+
+
+/* === keyword strip + tagline === */
+.kw-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 24px; }
+.kw { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-dim); padding: 4px 8px; border: 1px solid var(--line-strong); background: oklch(0.13 0.014 270 / 0.7); }
+.kw-sep { color: var(--fg-mute); font-family: var(--f-mono); font-size: 11px; }
+.kw-hot { color: var(--amber); border-color: var(--amber); background: oklch(0.78 0.16 60 / 0.08); display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 16px oklch(0.78 0.16 60 / 0.25); }
+.kw-cn { font-family: var(--f-display); font-style: italic; font-size: 14px; letter-spacing: 0.02em; text-transform: none; }
+
+.hero-tagline { margin: 12px 0 28px; padding: 18px 22px; border-left: 2px solid var(--amber); background: oklch(0.17 0.018 270 / 0.5); display: flex; flex-direction: column; gap: 8px; max-width: 720px; }
+.tagline-cn { font-size: clamp(22px, 2.6vw, 32px); line-height: 1.3; color: var(--fg); }
+.tagline-hot { color: var(--amber); border-bottom: 1px dashed var(--amber); text-shadow: 0 0 18px oklch(0.78 0.16 60 / 0.5); }
+
+
+/* === lang switcher === */
+.lang-switch { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border: 1px solid var(--line-strong); background: oklch(0.15 0.016 270 / 0.6); }
+.lang-opt { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.1em; background: transparent; color: var(--fg-mute); border: 0; padding: 2px 6px; cursor: pointer; transition: color 120ms; }
+.lang-opt:hover { color: var(--fg-dim); }
+.lang-opt.is-on { color: var(--cyan); text-shadow: 0 0 8px oklch(0.82 0.16 200 / 0.6); }
+.lang-sep { color: var(--fg-mute); font-family: var(--f-mono); font-size: 11px; }
+
+/* === embodied section === */
+.embodied { padding-top: 96px; padding-bottom: 96px; }
+.emb-intro { font-size: 17px; color: var(--fg-dim); max-width: 880px; margin: -24px 0 48px; line-height: 1.65; }
+
+.emb-diagram { position: relative; height: 420px; margin: 0 auto 56px; max-width: 900px; }
+.emb-rings { position: absolute; inset: 0; }
+.emb-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; border: 1px dashed var(--line-strong); }
+.emb-ring.r1 { width: 120px; height: 120px; border-color: var(--cyan); opacity: 0.7; }
+.emb-ring.r2 { width: 220px; height: 220px; }
+.emb-ring.r3 { width: 320px; height: 320px; border-style: dotted; opacity: 0.7; }
+.emb-ring.r4 { width: 420px; height: 420px; opacity: 0.5; }
+.emb-core { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; }
+.emb-core svg { width: 100%; height: 100%; }
+.emb-sat { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
+.emb-sat-dot { width: 8px; height: 8px; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 10px var(--cyan); animation: pulse 2.4s ease-in-out infinite; }
+.emb-sat-label { font-size: 10px; color: var(--fg-dim); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.15em; }
+
+.emb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); }
+.emb-card { background: var(--bg-1); padding: 28px 22px; display: flex; flex-direction: column; gap: 12px; position: relative; }
+.emb-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--c); opacity: 0.7; }
+.emb-card-head { display: flex; justify-content: space-between; }
+.emb-glyph { margin: 4px 0 8px; }
+.emb-title { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 32px; line-height: 1; color: var(--fg); margin: 0; }
+.emb-desc { font-size: 13px; color: var(--fg-dim); line-height: 1.6; margin: 0; flex: 1; }
+.emb-nodes { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.emb-nodes li { font-size: 11px; color: var(--fg-mute); padding-left: 14px; position: relative; }
+.emb-nodes li::before { content: "▸"; position: absolute; left: 0; color: var(--c); opacity: 0.7; }
+.emb-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 11px; }
+.emb-stats > div { display: flex; flex-direction: column; gap: 2px; }
+.emb-stats b { color: var(--fg); font-weight: 500; font-size: 14px; }
+
+@media (max-width: 960px) {
+  .emb-grid { grid-template-columns: 1fr 1fr; }
+  .emb-diagram { height: 320px; }
+  .emb-ring.r4 { width: 300px; height: 300px; }
+  .emb-ring.r3 { width: 230px; height: 230px; }
+  .emb-ring.r2 { width: 160px; height: 160px; }
+  .emb-ring.r1 { width: 90px; height: 90px; }
+}
+
+
+/* === Why 42 === */
+.why42 { position: relative; }
+.why-lead { font-family: var(--f-display); font-style: italic; font-size: clamp(22px, 2.4vw, 32px); line-height: 1.4; color: var(--fg-dim); max-width: 880px; margin: -24px 0 48px; }
+.why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); }
+.why-card { background: var(--bg-1); padding: 24px 22px; display: flex; flex-direction: column; gap: 8px; position: relative; min-height: 220px; transition: background 200ms; }
+.why-card:hover { background: var(--bg-2); }
+.why-num { font-size: 36px; line-height: 1; color: var(--cyan); opacity: 0.6; }
+.why-code { font-size: 10px; letter-spacing: 0.18em; color: var(--fg-mute); }
+.why-title { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 24px; line-height: 1.15; color: var(--fg); margin: 4px 0; }
+.why-body { font-size: 13px; color: var(--fg-dim); line-height: 1.6; margin: 0; }
+.why-orbit { margin-top: 56px; border: 1px solid var(--line-strong); background: var(--bg-1); padding: 0; height: 220px; overflow: hidden; }
+.why-orbit svg { width: 100%; height: 100%; display: block; }
+@media (max-width: 960px) { .why-grid { grid-template-columns: 1fr 1fr; } }
+
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel">
+// 42Star.ai — product registry
+const PRODUCTS = [
+  // ─── Personal plane ─────────────────────────────────────────────
+  {
+    id: "starclaw", code: "SC-01", plane: "personal", form: "desktop",
+    name: "StarClaw", tag: "本地化 Agent 管理平台",
+    pitch: "你的私人 Agent 操作系统。在本地编排、调度、唤醒任意智能体。",
+    long: "面向个人的本地化 Agent 控制台。统一的 Agent 注册表、生命周期管理、上下文工作目录，所有推理路径都可审计。",
+    stat: "12 active agents · local-first",
+    coord: { x: 24, y: 32 },
+  },
+  {
+    id: "starwork", code: "SC-02", plane: "personal", form: "mobile",
+    name: "StarWork", tag: "StarClaw · 工作场景客户端",
+    pitch: "把工作流装进口袋。一天两小时，AI 接管其余六小时。",
+    long: "面向工作场景的 StarClaw 手机端。会议、文档、协作、决策辅助，Agent 在每一个工作触点上等候。",
+    stat: "4 days × 2 hours",
+    coord: { x: 38, y: 22 },
+  },
+  {
+    id: "staryme", code: "SC-03", plane: "personal", form: "mobile",
+    name: "Staryme", tag: "StarClaw · 个人生活客户端",
+    pitch: "属于你的生活管家。健康、家务、关系、消费，由 Agent 协同打理。",
+    long: "面向个人生活的 StarClaw 手机端。Agent 围绕你的日常半径自主运转，让你回归生活本身。",
+    stat: "your second brain",
+    coord: { x: 18, y: 50 },
+  },
+
+  // ─── Enterprise plane ───────────────────────────────────────────
+  {
+    id: "clawbase", code: "CB-00", plane: "enterprise", form: "platform",
+    name: "Clawbase", tag: "中小企业 AI 中台",
+    pitch: "自底向上的 AI Infra + Agent Infra。让任意业务可以 AI Native。",
+    long: "面向中小企业的全栈 AI 中台。推理调度、向量存储、Agent 运行时、可观测性，开箱即用。",
+    stat: "AI Infra + Agent Infra",
+    coord: { x: 64, y: 28 },
+  },
+
+  // ─── Vertical SaaS Agents ───────────────────────────────────────
+  {
+    id: "clawfin", code: "CV-F1", plane: "vertical", form: "saas",
+    name: "ClawFin", tag: "财务 Agent",
+    pitch: "对账、报表、税前规划。让 CFO 一个人就是一个团队。",
+    stat: "Vertical · Finance",
+    coord: { x: 78, y: 50 },
+  },
+  {
+    id: "clawtax", code: "CV-F2", plane: "vertical", form: "saas",
+    name: "ClawTax", tag: "税务 Agent",
+    pitch: "申报、合规、跨境。税务 Agent 7×24 跟你一起。",
+    stat: "Vertical · Tax",
+    coord: { x: 86, y: 38 },
+  },
+  {
+    id: "clawcoco", code: "CV-F3", plane: "vertical", form: "saas",
+    name: "ClawCoco", tag: "营销内容 Agent",
+    pitch: "选题、生产、分发、复盘。一个内容 Agent 团队。",
+    stat: "Vertical · Content",
+    coord: { x: 88, y: 60 },
+  },
+  {
+    id: "clawher", code: "CV-F4", plane: "vertical", form: "saas",
+    name: "ClawHer", tag: "HR / 人力 Agent",
+    pitch: "招聘、面试、绩效、组织诊断。Agent 让组织更轻。",
+    stat: "Vertical · People",
+    coord: { x: 76, y: 68 },
+  },
+
+  // ─── Standards / Infrastructure ─────────────────────────────────
+  {
+    id: "clawpkg", code: "ST-01", plane: "standard", form: "spec",
+    name: "ClawPkg", tag: "Agent 上下文打包规范",
+    pitch: "一键搬家。让 Agent 的上下文工作目录变成可移植格式。",
+    long: "面向智能体的打包规范，努力成为行业标准。让 Agent 实例在任意 runtime 之间无损迁移。",
+    stat: "Open spec · v0.42",
+    coord: { x: 50, y: 78 },
+  },
+  {
+    id: "clawuuid", code: "ST-02", plane: "standard", form: "spec",
+    name: "ClawUUID", tag: "Agent 护照体系",
+    pitch: "官方签发的 Agent 身份。每一次推理、每一次调用都可被信任。",
+    stat: "Issued · Verifiable",
+    coord: { x: 60, y: 86 },
+  },
+  {
+    id: "clawlego", code: "ST-03", plane: "standard", form: "marketplace",
+    name: "ClawLego", tag: "Agent 商店",
+    pitch: "ClawTpl 模板 + ClawMod 模块。Agent 时代的应用商店。",
+    long: "公共的 Agent 模板与模块市场，让构建 Agent 像拼乐高一样。",
+    stat: "1,204 templates · 8,932 mods",
+    coord: { x: 42, y: 88 },
+  },
+
+  // ─── Hardware ───────────────────────────────────────────────────
+  {
+    id: "clawclip", code: "HW-01", plane: "hardware", form: "device",
+    name: "ClawClip", tag: "磁吸 Agent 卡片",
+    pitch: "把 Agent 带在身上。任意设备一吸即唤醒你的 Agent 实例。",
+    long: "随身的 Agent 存储介质。磁吸接口 + 加密容器，让你的 Agent 跨设备、跨环境无缝迁移。",
+    stat: "32 GB context · NFC-S",
+    coord: { x: 30, y: 70 },
+  },
+];
+
+const PLANES = {
+  personal:   { label: "Personal",      hue: "var(--cyan)",   code: "P" },
+  enterprise: { label: "Enterprise",    hue: "var(--amber)",  code: "E" },
+  vertical:   { label: "Vertical SaaS", hue: "var(--violet)", code: "V" },
+  standard:   { label: "Standard / Infra", hue: "var(--cyan)",   code: "S" },
+  hardware:   { label: "Hardware",      hue: "var(--amber)",  code: "H" },
+};
+
+window.PRODUCTS = PRODUCTS;
+window.PLANES = PLANES;
+
+  </script>
+  <script type="text/babel">
+// === i18n — zh-CN / zh-TW / en ===
+const T = {
+  "zh-CN": {
+    lang_name: "简体中文",
+    // nav
+    nav_vision: "愿景", nav_constellation: "星图", nav_embodied: "具身", nav_matrix: "产品", nav_manifesto: "宣言",
+    nav_signin: "登录", nav_est: "成立于 2042",
+    // hero
+    h_prelude: "卷 042 · AI 原生社会 · 公开广播",
+    h_thesis: "命题",
+    h_thesis_cn: ["让智能 ", "压缩时间", "，把生活还给你。"],
+    h_thesis_en: "LET INTELLIGENCE COMPRESS TIME — SO YOU CAN LIVE THE REST.",
+    h_t1: "答案是", h_t2: "42", h_t3: "我们只是让它", h_t4: "可被触达",
+    h_sub: ["42Star.ai 是一个面向 2042 年的 AI Native 产品矩阵 —— 从你口袋里的 Agent，到楼下小店的 AI 中台，到云上的推理网络，到你随身的磁吸卡片。", "人人都是 cyber-self。", "未来，应当是性感的。"],
+    h_cta1: "进入星图 →", h_cta2: "阅读宣言",
+    h_stat1: "在线产品", h_stat1s: "覆盖 5 个平面",
+    h_stat2: "每秒推理", h_stat2s: "最近 60 秒 · 全球",
+    h_stat3: "活跃 Agent", h_stat3s: "ClawUUID 已签发",
+    h_stat4: "工作周", h_stat4s: "归还给生活",
+    h_kw: ["未来派", "Cyber-Self", "AI 原生", "触手可及"],
+    h_boot1: "运行时", h_boot2: "Agent 网络", h_boot3: "身份账本", h_boot4: "等待 cyber-self",
+    // vision
+    s1_label: "4×2 公约", s1_caption: "人与机器的新契约。",
+    v_title: ["四天，每天两小时。", "其余时间归你。"],
+    v_p1: ["过去一周 5×8 = 40 小时；以 2025 年为基线，2042 年的 cyber-self 只需要 ", "4 × 2 = 8 小时", " 主动协同时间，其余由你的 Agent 群体在后台完成 —— 而且更好。"],
+    v_p2: ["让智能来帮我们压缩时间", " —— 这不只是效率口号，是 42Star 全部产品形态的同一个底层动机。"],
+    week_total: "本周 · 168 小时", week_split: ["主动 ", "8h", " · 生活 ", "160h"],
+    week_active: "与 Agent 协同", week_life: "生活 · 学习 · 休息", week_sleep: "睡眠",
+    s2_label: "Cyber-Self", s2_caption: "AI 不是工具，是你的一层。",
+    cs_l0: "图层 · 0", cs_l0t: "你", cs_l0p: "意图、偏好、价值观。永远是这个系统的圆心。",
+    cs_l1: "图层 · 1 — 贴身", cs_l1t: "健康 · 日历 · 收件", cs_l1p: "最贴身的三只 Agent。它们读你也写你，永远本地优先。",
+    cs_l2: "图层 · 2 — 领域", cs_l2t: "财务 · 居家 · 学习 · 出行", cs_l2p: "围绕生活半径的领域 Agent。被授权时才出场。",
+    cs_l3: "图层 · 3 — 环境", cs_l3t: "研究 · 编程 · 写作 · 沟通 · 记忆", cs_l3p: "在云端无声运转。把世界折叠成可以处理的尺寸。",
+    // embodied
+    s3_label: "具身与环境智能", s3_caption: "无处不在的 AI。在身上、在房间里、在路上。",
+    eb_intro: "2042 不只是更快的 Chatbot。AI 离开屏幕，进入空间 —— 长出关节、长出眼睛、长出皮肤。42Star 同时为四类形态提供运行时和身份。",
+    eb_body: "具身", eb_body_d: "人形与四足机器人。它们不是工具，是家庭成员、车间同事、城市基础设施。",
+    eb_wear: "可穿戴", eb_wear_d: "智能眼镜、耳机、戒指。Agent 透过你的感官，提示、翻译、记忆。",
+    eb_home: "环境", eb_home_d: "家居与办公空间。墙、灯、桌面成为 AI 的躯体；ClawClip 一吸即唤醒。",
+    eb_cloud: "云端", eb_cloud_d: "Clawbase 与公共推理网络。从指尖到数据中心，无缝同一个 Agent。",
+    eb_legend: "形态平面", eb_units: "节点", eb_qps: "每秒交互",
+    // constellation
+    s4_label: "产品星图", s4_caption: "十三个产品。五个平面。一张网。",
+    cn_panel: "观测", cn_empty_t: "悬停或点击任何一颗星。",
+    cn_empty_p: "13 个产品组成 42Star 的轨道。它们彼此可调用、可发现、可替换 —— 因为它们共享同一套 Agent 规范、身份、运行时。",
+    cn_open: "打开",
+    ax_tl: "— 个人 · 本地", ax_tr: "企业 · 云端 —", ax_bl: "— 硬件 · 边缘", ax_br: "标准 · 网络 —",
+    // matrix
+    s5_label: "产品矩阵", s5_caption: "浏览 42Star 的全部平面。",
+    mx_plane: "平面", mx_products: "个产品",
+    // manifesto
+    s6_label: "42 宣言", s6_caption: "我们相信的 2042。",
+    man: [
+      ["Agent 以人为形。", "每个人都有 N 个 Agent；它们围绕你而不是平台。"],
+      ["本地是神圣的。", "最亲密的推理留在你自己的设备上。云只承担它该承担的。"],
+      ["身份是可携带的。", "ClawUUID 让一个 Agent 跨厂商、跨设备保持自己。"],
+      ["上下文是新的 App。", "ClawPkg 把上下文工作目录变成可移植格式。"],
+      ["小企业也配拥有 AI 基建。", "Clawbase 是给楼下小店的 GPU 集群。"],
+      ["硬件只是另一种 Runtime。", "ClawClip 让 Agent 像钥匙一样挂在身上。"],
+      ["时间，而非功能。", "最终衡量 AI 的不是参数，是你被还回多少时间。"],
+    ],
+    pull: "“答案是 42。最终的问题，是剩下 160 个小时你如何度过。”",
+    pull_sig: "— 42STAR.AI · 章程 · 2042",
+    // CTA
+    cta_kicker: "// 加入星座",
+    cta_t: ["签发你的第一张 ", "ClawUUID", "。"],
+    cta_p: "注册即获得一个官方签发的 Agent 护照、一个 StarClaw 工作空间，和一份属于你的 ClawPkg 模板。剩下的，你的 Agent 会处理。",
+    cta_b1: "获取我的 UUID  →", cta_b2: "与 Agent 对话",
+    cta_note: "早期轨道期免费 · 无需信用卡",
+    // footer
+    foot_p: "为 AI 原生社会而构建的产品矩阵。我们建造，是为了让你能停止建造。",
+    foot_obs: "天文台 · 开放",
+  },
+
+  "zh-TW": {
+    lang_name: "繁體中文",
+    nav_vision: "願景", nav_constellation: "星圖", nav_embodied: "具身", nav_matrix: "產品", nav_manifesto: "宣言",
+    nav_signin: "登入", nav_est: "成立於 2042",
+    h_prelude: "卷 042 · AI 原生社會 · 公開廣播",
+    h_thesis: "命題",
+    h_thesis_cn: ["讓智能 ", "壓縮時間", "，把生活還給你。"],
+    h_thesis_en: "LET INTELLIGENCE COMPRESS TIME — SO YOU CAN LIVE THE REST.",
+    h_t1: "答案是", h_t2: "42", h_t3: "我們只是讓它", h_t4: "可被觸達",
+    h_sub: ["42Star.ai 是一個面向 2042 年的 AI Native 產品矩陣 —— 從你口袋裡的 Agent，到樓下小店的 AI 中台，到雲上的推理網路，到你隨身的磁吸卡片。", "人人都是 cyber-self。", "未來，應當是性感的。"],
+    h_cta1: "進入星圖 →", h_cta2: "閱讀宣言",
+    h_stat1: "上線產品", h_stat1s: "覆蓋 5 個平面",
+    h_stat2: "每秒推理", h_stat2s: "最近 60 秒 · 全球",
+    h_stat3: "活躍 Agent", h_stat3s: "ClawUUID 已簽發",
+    h_stat4: "工作週", h_stat4s: "歸還給生活",
+    h_kw: ["未來派", "Cyber-Self", "AI 原生", "觸手可及"],
+    h_boot1: "執行時", h_boot2: "Agent 網路", h_boot3: "身份帳本", h_boot4: "等待 cyber-self",
+    s1_label: "4×2 公約", s1_caption: "人與機器的新契約。",
+    v_title: ["四天，每天兩小時。", "其餘時間歸你。"],
+    v_p1: ["過去一週 5×8 = 40 小時；以 2025 年為基準，2042 年的 cyber-self 只需要 ", "4 × 2 = 8 小時", " 主動協同時間，其餘由你的 Agent 群體在後台完成 —— 而且更好。"],
+    v_p2: ["讓智能來幫我們壓縮時間", " —— 這不只是效率口號，是 42Star 全部產品形態的同一個底層動機。"],
+    week_total: "本週 · 168 小時", week_split: ["主動 ", "8h", " · 生活 ", "160h"],
+    week_active: "與 Agent 協同", week_life: "生活 · 學習 · 休息", week_sleep: "睡眠",
+    s2_label: "Cyber-Self", s2_caption: "AI 不是工具，是你的一層。",
+    cs_l0: "圖層 · 0", cs_l0t: "你", cs_l0p: "意圖、偏好、價值觀。永遠是這個系統的圓心。",
+    cs_l1: "圖層 · 1 — 貼身", cs_l1t: "健康 · 日曆 · 收件", cs_l1p: "最貼身的三隻 Agent。它們讀你也寫你，永遠本地優先。",
+    cs_l2: "圖層 · 2 — 領域", cs_l2t: "財務 · 居家 · 學習 · 出行", cs_l2p: "圍繞生活半徑的領域 Agent。被授權時才出場。",
+    cs_l3: "圖層 · 3 — 環境", cs_l3t: "研究 · 程式 · 寫作 · 溝通 · 記憶", cs_l3p: "在雲端無聲運轉。把世界折疊成可以處理的尺寸。",
+    s3_label: "具身與環境智能", s3_caption: "無處不在的 AI。在身上、在房間裡、在路上。",
+    eb_intro: "2042 不只是更快的 Chatbot。AI 離開螢幕，進入空間 —— 長出關節、長出眼睛、長出皮膚。42Star 同時為四類形態提供執行時和身份。",
+    eb_body: "具身", eb_body_d: "人形與四足機器人。它們不是工具，是家庭成員、車間同事、城市基礎設施。",
+    eb_wear: "可穿戴", eb_wear_d: "智慧眼鏡、耳機、戒指。Agent 透過你的感官，提示、翻譯、記憶。",
+    eb_home: "環境", eb_home_d: "家居與辦公空間。牆、燈、桌面成為 AI 的軀體；ClawClip 一吸即喚醒。",
+    eb_cloud: "雲端", eb_cloud_d: "Clawbase 與公共推理網路。從指尖到資料中心，無縫同一個 Agent。",
+    eb_legend: "形態平面", eb_units: "節點", eb_qps: "每秒互動",
+    s4_label: "產品星圖", s4_caption: "十三個產品。五個平面。一張網。",
+    cn_panel: "觀測", cn_empty_t: "懸停或點擊任何一顆星。",
+    cn_empty_p: "13 個產品組成 42Star 的軌道。它們彼此可呼叫、可發現、可替換 —— 因為它們共享同一套 Agent 規範、身份、執行時。",
+    cn_open: "打開",
+    ax_tl: "— 個人 · 本地", ax_tr: "企業 · 雲端 —", ax_bl: "— 硬體 · 邊緣", ax_br: "標準 · 網路 —",
+    s5_label: "產品矩陣", s5_caption: "瀏覽 42Star 的全部平面。",
+    mx_plane: "平面", mx_products: "個產品",
+    s6_label: "42 宣言", s6_caption: "我們相信的 2042。",
+    man: [
+      ["Agent 以人為形。", "每個人都有 N 個 Agent；它們圍繞你而不是平台。"],
+      ["本地是神聖的。", "最親密的推理留在你自己的設備上。雲只承擔它該承擔的。"],
+      ["身份是可攜帶的。", "ClawUUID 讓一個 Agent 跨廠商、跨設備保持自己。"],
+      ["上下文是新的 App。", "ClawPkg 把上下文工作目錄變成可移植格式。"],
+      ["小企業也配擁有 AI 基建。", "Clawbase 是給樓下小店的 GPU 叢集。"],
+      ["硬體只是另一種 Runtime。", "ClawClip 讓 Agent 像鑰匙一樣掛在身上。"],
+      ["時間，而非功能。", "最終衡量 AI 的不是參數，是你被還回多少時間。"],
+    ],
+    pull: "「答案是 42。最終的問題，是剩下 160 個小時你如何度過。」",
+    pull_sig: "— 42STAR.AI · 章程 · 2042",
+    cta_kicker: "// 加入星座",
+    cta_t: ["簽發你的第一張 ", "ClawUUID", "。"],
+    cta_p: "註冊即獲得一個官方簽發的 Agent 護照、一個 StarClaw 工作空間，和一份屬於你的 ClawPkg 模板。剩下的，你的 Agent 會處理。",
+    cta_b1: "獲取我的 UUID  →", cta_b2: "與 Agent 對話",
+    cta_note: "早期軌道期免費 · 無需信用卡",
+    foot_p: "為 AI 原生社會而構建的產品矩陣。我們建造，是為了讓你能停止建造。",
+    foot_obs: "天文台 · 開放",
+  },
+
+  "en": {
+    lang_name: "English",
+    nav_vision: "Vision", nav_constellation: "Constellation", nav_embodied: "Embodied", nav_matrix: "Products", nav_manifesto: "Manifesto",
+    nav_signin: "Sign in", nav_est: "EST. 2042",
+    h_prelude: "VOL. 042 ·  AI NATIVE SOCIETY ·  OPEN BROADCAST",
+    h_thesis: "THESIS",
+    h_thesis_cn: ["Let intelligence ", "compress time", " — give life back to you."],
+    h_thesis_en: "让智能压缩时间，把生活还给你。",
+    h_t1: "The answer is", h_t2: "42", h_t3: "we just made it", h_t4: "addressable.",
+    h_sub: ["42Star.ai is a product matrix for 2042 — from the Agent in your pocket, to the AI platform under your corner store, to the inference net in the sky, to the magnetic card on your keyring. ", "Everyone is a cyber-self.", " The future should be sexy."],
+    h_cta1: "Enter the constellation →", h_cta2: "Read the manifesto",
+    h_stat1: "Products live", h_stat1s: "across 5 planes",
+    h_stat2: "Inference / sec", h_stat2s: "last 60s · global",
+    h_stat3: "Agents wandering", h_stat3s: "ClawUUID issued",
+    h_stat4: "Work week", h_stat4s: "reclaimed for life",
+    h_kw: ["Futurist", "Cyber-Self", "AI Native", "Touch-Reach"],
+    h_boot1: "claw-runtime", h_boot2: "agent-mesh", h_boot3: "uuid-ledger", h_boot4: "awaiting cyber-self",
+    s1_label: "THE 4×2 DOCTRINE", s1_caption: "A new compact between humans and machines.",
+    v_title: ["Four days. Two hours.", "The rest is yours."],
+    v_p1: ["A 2025 work-week was 5×8 = 40h. A 2042 cyber-self needs only ", "4 × 2 = 8h", " of active co-pilot time. The rest runs in the background — and better."],
+    v_p2: ["Let intelligence compress time for us", " — not a productivity slogan, but the single shared motive beneath every 42Star product."],
+    week_total: "WEEK · 168 h", week_split: ["active ", "8h", " · life ", "160h"],
+    week_active: "active w/ agents", week_life: "life · learning · rest", week_sleep: "sleep",
+    s2_label: "THE CYBER-SELF", s2_caption: "Your AI is not a tool. It is a layer of you.",
+    cs_l0: "LAYER · 0", cs_l0t: "You", cs_l0p: "Intent, preference, values. Always the center of the system.",
+    cs_l1: "LAYER · 1 — INTIMATE", cs_l1t: "Health · Calendar · Inbox", cs_l1p: "The three closest agents. They read you and write you — always local first.",
+    cs_l2: "LAYER · 2 — DOMAIN", cs_l2t: "Finance · Home · Learning · Travel", cs_l2p: "Domain agents around your life radius. They show up only when invited.",
+    cs_l3: "LAYER · 3 — AMBIENT", cs_l3t: "Research · Code · Writing · Comms · Memory", cs_l3p: "Run silently in the cloud. Fold the world into a tractable size.",
+    s3_label: "EMBODIED & AMBIENT AI", s3_caption: "AI, everywhere. On you, in the room, on the road.",
+    eb_intro: "2042 isn't a faster chatbot. AI leaves the screen and enters space — growing joints, eyes, skin. 42Star issues runtime and identity to four embodiments at once.",
+    eb_body: "Embodied", eb_body_d: "Humanoids and quadrupeds. Not tools — family members, factory colleagues, civic infrastructure.",
+    eb_wear: "Wearable", eb_wear_d: "Smart glasses, earpieces, rings. The agent rides your senses — prompts, translates, remembers.",
+    eb_home: "Ambient", eb_home_d: "Homes and offices. Walls, lamps, desks become the body of AI. ClawClip touches and wakes.",
+    eb_cloud: "Cloud", eb_cloud_d: "Clawbase + the public inference net. From fingertip to datacenter — one and the same agent.",
+    eb_legend: "Embodiment planes", eb_units: "units", eb_qps: "interactions/sec",
+    s4_label: "THE CONSTELLATION", s4_caption: "Thirteen products. Five planes. One network.",
+    cn_panel: "OBSERVATION", cn_empty_t: "Hover or tap any star.",
+    cn_empty_p: "Thirteen products form 42Star's orbits. Each is callable, discoverable, replaceable — because they share one agent spec, one identity, one runtime.",
+    cn_open: "Open",
+    ax_tl: "— PERSONAL · LOCAL", ax_tr: "ENTERPRISE · CLOUD —", ax_bl: "— HARDWARE · EDGE", ax_br: "STANDARDS · NETWORK —",
+    s5_label: "THE PRODUCT MATRIX", s5_caption: "Browse the full surface area of 42Star.ai.",
+    mx_plane: "Plane", mx_products: "products",
+    s6_label: "THE 42 MANIFESTO", s6_caption: "What we believe about 2042.",
+    man: [
+      ["Agents are people-shaped.", "Each of us hosts N agents. They orbit you, not the platform."],
+      ["Local is sacred.", "The most intimate inference stays on your own device. Cloud carries only what cloud must."],
+      ["Identity is portable.", "ClawUUID keeps an agent itself across vendors, across devices."],
+      ["Context is the new app.", "ClawPkg makes the agent's working directory portable."],
+      ["Small business deserves AI infra too.", "Clawbase is a GPU cluster for the corner store."],
+      ["Hardware is just another runtime.", "ClawClip lets an agent hang on you like a key."],
+      ["Time, not features.", "The only honest measure of AI is how many hours it gave you back."],
+    ],
+    pull: "“The answer is 42. The question, finally, is what you do with the other 160 hours.”",
+    pull_sig: "— 42STAR.AI · CHARTER · 2042",
+    cta_kicker: "// JOIN THE CONSTELLATION",
+    cta_t: ["Issue your first ", "ClawUUID", " today."],
+    cta_p: "Sign up and receive an officially issued agent passport, a StarClaw workspace, and your own ClawPkg template. Your agents will handle the rest.",
+    cta_b1: "Get my UUID  →", cta_b2: "Talk to an Agent",
+    cta_note: "Free during early orbit · No card required",
+    foot_p: "A product matrix for the AI Native society. Built so you can stop building.",
+    foot_obs: "OBSERVATORY · OPEN",
+  },
+};
+
+// per-product translations (name kept, pitch/tag translated)
+const TP = {
+  starclaw: {
+    "zh-CN": { tag: "本地化 Agent 管理平台", pitch: "你的私人 Agent 操作系统。在本地编排、调度、唤醒任意智能体。" },
+    "zh-TW": { tag: "本地化 Agent 管理平台", pitch: "你的私人 Agent 作業系統。在本地編排、調度、喚醒任意智慧體。" },
+    "en":    { tag: "Local Agent control plane", pitch: "Your personal agent OS. Compose, schedule, wake any agent — locally." },
+  },
+  starwork: {
+    "zh-CN": { tag: "StarClaw · 工作场景客户端", pitch: "把工作流装进口袋。一天两小时，AI 接管其余六小时。" },
+    "zh-TW": { tag: "StarClaw · 工作場景客戶端", pitch: "把工作流裝進口袋。一天兩小時，AI 接管其餘六小時。" },
+    "en":    { tag: "StarClaw · work edition", pitch: "Workflows in your pocket. You give two hours; AI runs the other six." },
+  },
+  staryme: {
+    "zh-CN": { tag: "StarClaw · 个人生活客户端", pitch: "属于你的生活管家。健康、家务、关系、消费，由 Agent 协同打理。" },
+    "zh-TW": { tag: "StarClaw · 個人生活客戶端", pitch: "屬於你的生活管家。健康、家務、關係、消費，由 Agent 協同打理。" },
+    "en":    { tag: "StarClaw · life edition", pitch: "A life concierge. Health, home, relationships, spending — agents in concert." },
+  },
+  clawbase: {
+    "zh-CN": { tag: "中小企业 AI 中台", pitch: "自底向上的 AI Infra + Agent Infra。让任意业务可以 AI Native。" },
+    "zh-TW": { tag: "中小企業 AI 中台", pitch: "自底向上的 AI Infra + Agent Infra。讓任意業務可以 AI Native。" },
+    "en":    { tag: "SMB AI middleware", pitch: "Bottom-up AI infra + Agent infra. Make any business AI native." },
+  },
+  clawfin: {
+    "zh-CN": { tag: "财务 Agent", pitch: "对账、报表、税前规划。让 CFO 一个人就是一个团队。" },
+    "zh-TW": { tag: "財務 Agent", pitch: "對賬、報表、稅前規劃。讓 CFO 一個人就是一個團隊。" },
+    "en":    { tag: "Finance agent", pitch: "Recon, reports, pre-tax planning. One CFO becomes a team." },
+  },
+  clawtax: {
+    "zh-CN": { tag: "税务 Agent", pitch: "申报、合规、跨境。税务 Agent 7×24 跟你一起。" },
+    "zh-TW": { tag: "稅務 Agent", pitch: "申報、合規、跨境。稅務 Agent 7×24 跟你一起。" },
+    "en":    { tag: "Tax agent", pitch: "Filing, compliance, cross-border — 24×7 by your side." },
+  },
+  clawcoco: {
+    "zh-CN": { tag: "营销内容 Agent", pitch: "选题、生产、分发、复盘。一个内容 Agent 团队。" },
+    "zh-TW": { tag: "行銷內容 Agent", pitch: "選題、製作、分發、覆盤。一個內容 Agent 團隊。" },
+    "en":    { tag: "Content agent", pitch: "Ideate, produce, distribute, review — a full content team." },
+  },
+  clawher: {
+    "zh-CN": { tag: "HR / 人力 Agent", pitch: "招聘、面试、绩效、组织诊断。Agent 让组织更轻。" },
+    "zh-TW": { tag: "HR / 人力 Agent", pitch: "招聘、面試、績效、組織診斷。Agent 讓組織更輕。" },
+    "en":    { tag: "People agent", pitch: "Hiring, interviews, performance, org diagnostics — a lighter org." },
+  },
+  clawpkg: {
+    "zh-CN": { tag: "Agent 上下文打包规范", pitch: "一键搬家。让 Agent 的上下文工作目录变成可移植格式。" },
+    "zh-TW": { tag: "Agent 上下文打包規範", pitch: "一鍵搬家。讓 Agent 的上下文工作目錄變成可移植格式。" },
+    "en":    { tag: "Agent context pack spec", pitch: "One-tap relocation. Turn an agent's working directory into a portable format." },
+  },
+  clawuuid: {
+    "zh-CN": { tag: "Agent 护照体系", pitch: "官方签发的 Agent 身份。每一次推理、每一次调用都可被信任。" },
+    "zh-TW": { tag: "Agent 護照體系", pitch: "官方簽發的 Agent 身份。每一次推理、每一次呼叫都可被信任。" },
+    "en":    { tag: "Agent passport", pitch: "Officially issued identity. Every inference, every call — verifiable." },
+  },
+  clawlego: {
+    "zh-CN": { tag: "Agent 商店", pitch: "ClawTpl 模板 + ClawMod 模块。Agent 时代的应用商店。" },
+    "zh-TW": { tag: "Agent 商店", pitch: "ClawTpl 模板 + ClawMod 模組。Agent 時代的應用商店。" },
+    "en":    { tag: "Agent marketplace", pitch: "ClawTpl templates + ClawMod modules. The app store of the agent era." },
+  },
+  clawclip: {
+    "zh-CN": { tag: "磁吸 Agent 卡片", pitch: "把 Agent 带在身上。任意设备一吸即唤醒你的 Agent 实例。" },
+    "zh-TW": { tag: "磁吸 Agent 卡片", pitch: "把 Agent 帶在身上。任意設備一吸即喚醒你的 Agent 實例。" },
+    "en":    { tag: "Magnetic agent card", pitch: "Wear your agent. Snap onto any device — your instance wakes." },
+  },
+};
+
+const PLANE_LABELS = {
+  "zh-CN": { personal: "个人平面", enterprise: "企业平面", vertical: "垂直 SaaS", standard: "标准 · 基建", hardware: "硬件" },
+  "zh-TW": { personal: "個人平面", enterprise: "企業平面", vertical: "垂直 SaaS", standard: "標準 · 基建", hardware: "硬體" },
+  "en":    { personal: "Personal",   enterprise: "Enterprise",  vertical: "Vertical SaaS", standard: "Standard / Infra", hardware: "Hardware" },
+};
+
+window.T = T;
+window.TP = TP;
+window.PLANE_LABELS = PLANE_LABELS;
+window.LangContext = React.createContext({ lang: "zh-CN", t: (k) => k, tp: (id, k) => k, planeLabel: (k) => k });
+
+  </script>
+  <script type="text/babel">
+// === Hero / boot sequence ===
+const { useState, useEffect, useRef, useMemo, useContext } = React;
+
+function Starfield() {
+  const stars = useMemo(() => {
+    const arr = []; let seed = 42;
+    const rng = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    for (let i = 0; i < 120; i++) arr.push({ x: rng()*100, y: rng()*100, r: rng()*1.3+0.2, o: rng()*0.7+0.15, d: rng()*3+2 });
+    return arr;
+  }, []);
+  return (
+    <div className="stars">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        {stars.map((s, i) => (
+          <circle key={i} cx={s.x} cy={s.y} r={s.r * 0.18} fill="white" opacity={s.o}>
+            <animate attributeName="opacity" values={`${s.o};${s.o * 0.2};${s.o}`} dur={`${s.d}s`} repeatCount="indefinite" />
+          </circle>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function ProductFlyout() {
+  const { lang } = useContext(window.LangContext);
+  const products = window.PRODUCTS;
+  const planes = window.PLANES;
+  const groups = ["personal", "enterprise", "vertical", "standard", "hardware"];
+  const planeLabels = window.PLANE_LABELS[lang] || window.PLANE_LABELS["zh-CN"];
+  const tp = (id, k) => (window.TP[id] && window.TP[id][lang] && window.TP[id][lang][k]) || "";
+  return (
+    <div className="prod-fly">
+      <div className="prod-fly-grid">
+        {groups.map(g => {
+          const list = products.filter(p => p.plane === g);
+          const plane = planes[g];
+          return (
+            <div key={g} className="prod-fly-col">
+              <div className="prod-fly-col-head" style={{color: plane.hue}}>{planeLabels[g]}</div>
+              <div className="prod-fly-items">
+                {list.map(p => (
+                  <a key={p.id} href={`#${p.id}`} className="prod-fly-item">
+                    <span className="prod-fly-name">{p.name}</span>
+                    <span className="prod-fly-tag">{tp(p.id, "tag")}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function NavProducts({ label }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={"nav-prod" + (open ? " is-open" : "")}
+         onMouseEnter={() => setOpen(true)}
+         onMouseLeave={() => setOpen(false)}>
+      <a href="#matrix">{label}</a>
+      {open && <ProductFlyout />}
+    </div>
+  );
+}
+
+function TopNav() {
+  const { t, lang, setLang } = useContext(window.LangContext);
+  return (
+    <header className="topnav">
+      <div className="brand">
+        <span className="brand-mark">
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" />
+            <path d="M12 2 L12 6 M12 18 L12 22 M2 12 L6 12 M18 12 L22 12" stroke="currentColor" strokeWidth="1" opacity="0.6" />
+          </svg>
+        </span>
+        <span className="brand-text"><span className="brand-num">42</span>Star</span>
+      </div>
+      <nav className="nav-links">
+        <a href="#vision">{t("nav_vision")}</a>
+        <a href="#embodied">{t("nav_embodied")}</a>
+        <a href="#constellation">{t("nav_constellation")}</a>
+        <NavProducts label={t("nav_matrix")} />
+        <a href="#manifesto">{t("nav_manifesto")}</a>
+      </nav>
+      <div className="nav-right">
+        <LangSwitcher lang={lang} setLang={setLang} />
+      </div>
+    </header>
+  );
+}
+
+function LangSwitcher({ lang, setLang }) {
+  const opts = [
+    { v: "zh-CN", l: "简中" },
+    { v: "zh-TW", l: "繁中" },
+    { v: "en",    l: "EN"   },
+  ];
+  return (
+    <div className="lang-switch" role="tablist" aria-label="Language">
+      {opts.map((o, i) => (
+        <React.Fragment key={o.v}>
+          <button
+            className={"lang-opt " + (lang === o.v ? "is-on" : "")}
+            onClick={() => setLang(o.v)}
+            role="tab" aria-selected={lang === o.v}
+          >{o.l}</button>
+          {i < opts.length - 1 && <span className="lang-sep">·</span>}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function BootLine({ children, delay }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setShown(true), delay); return () => clearTimeout(t); }, [delay]);
+  if (!shown) return null;
+  return <div className="boot-line">{children}</div>;
+}
+
+function Hero() {
+  const { t } = useContext(window.LangContext);
+  const [now, setNow] = useState(new Date());
+  useEffect(() => { const i = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(i); }, []);
+  const stamp = now.toISOString().replace("T", " ").slice(0, 19) + " UTC";
+  const sub = t("h_sub");
+  const thesis = t("h_thesis_cn");
+
+  return (
+    <section className="hero" id="top">
+      <div className="hero-grid">
+        <aside className="hero-side">
+          <div className="tag"><span className="dot"></span>SYS · ONLINE</div>
+          <div className="boot">
+            <BootLine delay={0}><span className="mute">$</span> 42star --boot</BootLine>
+            <BootLine delay={400}><span className="cyan">✓</span> {t("h_boot1")} <span className="mute">… 0.042s</span></BootLine>
+            <BootLine delay={800}><span className="cyan">✓</span> {t("h_boot2")} <span className="mute">… 0.018s</span></BootLine>
+            <BootLine delay={1200}><span className="cyan">✓</span> {t("h_boot3")} <span className="mute">… 0.011s</span></BootLine>
+            <BootLine delay={1600}><span className="amber">⟳</span> {t("h_boot4")}<span className="caret"></span></BootLine>
+          </div>
+          <div className="hero-clock mono dim">
+            <div>LOCAL · {stamp}</div>
+            <div>OBSERVATORY · 42°N 116°E</div>
+          </div>
+        </aside>
+
+        <div className="hero-main">
+          <div className="hero-prelude mono upper dim">{t("h_prelude")}</div>
+          <div className="kw-strip">
+            {t("h_kw").map((k, i) => (
+              <React.Fragment key={i}>
+                <span className="kw">{k}</span>
+                {i < t("h_kw").length - 1 && <span className="kw-sep">/</span>}
+              </React.Fragment>
+            ))}
+          </div>
+          <h1 className="hero-title">
+            <span className="serif">{t("h_t1")}</span>{" "}
+            <span className="forty-two">{t("h_t2")}</span>
+            <br />
+            <span className="serif">{t("h_t3")}</span>{" "}
+            <span className="under">{t("h_t4")}</span>
+          </h1>
+          <div className="hero-tagline">
+            <span className="mono upper amber" style={{fontSize: 11}}>// {t("h_thesis")}</span>
+            <div className="serif tagline-cn">{thesis[0]}<span className="tagline-hot">{thesis[1]}</span>{thesis[2]}</div>
+            <div className="mono dim" style={{fontSize: 12, letterSpacing: "0.18em"}}>{t("h_thesis_en")}</div>
+          </div>
+          <p className="hero-sub">
+            {sub[0]}<span className="cyan">{sub[1]}</span><span className="serif" style={{color:"var(--amber)"}}>{sub[2]}</span>
+          </p>
+          <div className="hero-ctas">
+            <a className="cta" href="#constellation" style={{textDecoration:"none"}}>{t("h_cta1")}</a>
+            <a className="cta ghost" href="#manifesto" style={{textDecoration:"none"}}>{t("h_cta2")}</a>
+          </div>
+
+          <div className="hero-stats">
+            <Stat k={t("h_stat1")} v="13" sub={t("h_stat1s")} />
+            <Stat k={t("h_stat2")} v="9.4M" sub={t("h_stat2s")} tick />
+            <Stat k={t("h_stat3")} v="2.1M" sub={t("h_stat3s")} />
+            <Stat k={t("h_stat4")} v="4 × 2h" sub={t("h_stat4s")} />
+          </div>
+        </div>
+
+        <span className="crosshair" style={{ top: 24, right: 24 }}></span>
+        <span className="crosshair" style={{ bottom: 24, left: 24 }}></span>
+      </div>
+    </section>
+  );
+}
+
+function Stat({ k, v, sub, tick }) {
+  const [val, setVal] = useState(v);
+  useEffect(() => {
+    if (!tick) return;
+    const i = setInterval(() => { const n = 9 + Math.random() * 1.5; setVal(n.toFixed(1) + "M"); }, 1400);
+    return () => clearInterval(i);
+  }, [tick]);
+  return (
+    <div className="stat">
+      <div className="stat-k mono upper">{k}</div>
+      <div className="stat-v">{val}</div>
+      <div className="stat-sub mono">{sub}</div>
+    </div>
+  );
+}
+
+window.Hero = Hero;
+window.TopNav = TopNav;
+window.Starfield = Starfield;
+
+  </script>
+  <script type="text/babel">
+// === Vision (4×2 + cyber-self) ===
+
+function VisionSection() {
+  const { t } = React.useContext(window.LangContext);
+  const v_title = t("v_title");
+  const v_p1 = t("v_p1");
+  const v_p2 = t("v_p2");
+  return (
+    <section className="vision" id="vision">
+      <SectionHead idx="01" label={t("s1_label")} caption={t("s1_caption")} />
+      <div className="vision-grid">
+        <div className="vision-left">
+          <h2 className="serif">{v_title[0]}<br /><span className="dim">{v_title[1]}</span></h2>
+          <p className="dim">{v_p1[0]}<span className="cyan">{v_p1[1]}</span>{v_p1[2]}</p>
+          <p className="dim"><span className="amber">{v_p2[0]}</span>{v_p2[1]}</p>
+        </div>
+        <WeekVisualizer />
+      </div>
+
+      <hr className="hairline" style={{ margin: "80px 0 64px" }} />
+
+      <SectionHead idx="02" label={t("s2_label")} caption={t("s2_caption")} />
+      <CyberSelf />
+    </section>
+  );
+}
+
+function SectionHead({ idx, label, caption }) {
+  return (
+    <div className="sec-head">
+      <span className="sec-idx mono">{idx}</span>
+      <div className="sec-meta">
+        <div className="mono upper cyan" style={{fontSize: 11}}>{label}</div>
+        <div className="serif sec-cap">{caption}</div>
+      </div>
+      <span className="sec-line" />
+    </div>
+  );
+}
+
+function WeekVisualizer() {
+  const { t } = React.useContext(window.LangContext);
+  const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+  const split = t("week_split");
+  return (
+    <div className="week-vis">
+      <div className="week-head mono upper dim">
+        <span>{t("week_total")}</span>
+        <span>{split[0]}<span className="cyan">{split[1]}</span>{split[2]}<span className="amber">{split[3]}</span></span>
+      </div>
+      <div className="week-rows">
+        {days.map((d, di) => {
+          const isWorkDay = di < 4;
+          return (
+            <div className="week-row" key={d}>
+              <div className="week-day mono">{d}</div>
+              <div className="week-cells">
+                {Array.from({ length: 24 }).map((_, hi) => {
+                  let cls = "wcell";
+                  if (isWorkDay && hi >= 10 && hi < 12) cls += " wcell-active";
+                  else if (hi >= 7 && hi < 23) cls += " wcell-life";
+                  return <div key={hi} className={cls} title={`${hi}:00`} />;
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="week-legend mono dim">
+        <span><i className="sw sw-active"></i> {t("week_active")}</span>
+        <span><i className="sw sw-life"></i> {t("week_life")}</span>
+        <span><i className="sw sw-sleep"></i> {t("week_sleep")}</span>
+      </div>
+    </div>
+  );
+}
+
+function CyberSelf() {
+  const { t } = React.useContext(window.LangContext);
+  const orbits = [
+    { r: 38, speed: 22, agents: [
+      { name: "Health", ang: 0 }, { name: "Calendar", ang: 120 }, { name: "Inbox", ang: 240 }] },
+    { r: 56, speed: 36, agents: [
+      { name: "Finance", ang: 30 }, { name: "Home", ang: 110 }, { name: "Learning", ang: 200 }, { name: "Travel", ang: 290 }] },
+    { r: 76, speed: 60, agents: [
+      { name: "Research", ang: 20 }, { name: "Code", ang: 95 }, { name: "Writing", ang: 175 }, { name: "Comms", ang: 250 }, { name: "Memory", ang: 320 }] },
+  ];
+  const youLabel = t("cs_l0t");
+  return (
+    <div className="cyber">
+      <div className="cyber-orbits">
+        <svg viewBox="-100 -100 200 200">
+          {orbits.map((o, i) => (
+            <circle key={i} cx="0" cy="0" r={o.r} fill="none" stroke="var(--line-strong)" strokeWidth="0.3" strokeDasharray="0.6 1.2" />
+          ))}
+          {[0, 45, 90, 135].map(a => (
+            <line key={a}
+              x1={Math.cos(a*Math.PI/180)*-92} y1={Math.sin(a*Math.PI/180)*-92}
+              x2={Math.cos(a*Math.PI/180)*92}  y2={Math.sin(a*Math.PI/180)*92}
+              stroke="var(--line)" strokeWidth="0.2" />
+          ))}
+          <circle cx="0" cy="0" r="14" fill="var(--bg-1)" stroke="var(--cyan)" strokeWidth="0.6" />
+          <circle cx="0" cy="0" r="6" fill="var(--cyan)" opacity="0.8">
+            <animate attributeName="r" values="5;7;5" dur="3s" repeatCount="indefinite" />
+          </circle>
+          <text x="0" y="2" textAnchor="middle" fill="var(--bg-0)" fontFamily="var(--f-mono)" fontSize={youLabel.length > 2 ? "3.2" : "4.5"} fontWeight="600">{youLabel}</text>
+
+          {orbits.map((o, oi) => (
+            <g key={oi}>
+              <animateTransform attributeName="transform" type="rotate" from="0 0 0" to={`${oi % 2 ? -360 : 360} 0 0`} dur={`${o.speed}s`} repeatCount="indefinite" />
+              {o.agents.map((a, ai) => {
+                const x = Math.cos(a.ang * Math.PI / 180) * o.r;
+                const y = Math.sin(a.ang * Math.PI / 180) * o.r;
+                return (
+                  <g key={ai} transform={`translate(${x} ${y})`}>
+                    <circle r="2.2" fill="var(--amber)" opacity="0.95" />
+                    <circle r="4" fill="none" stroke="var(--amber)" strokeWidth="0.3" opacity="0.5" />
+                    <g>
+                      <animateTransform attributeName="transform" type="rotate" from="0" to={`${oi % 2 ? 360 : -360}`} dur={`${o.speed}s`} repeatCount="indefinite" />
+                      <text x="0" y="-5" textAnchor="middle" fill="var(--fg-dim)" fontFamily="var(--f-mono)" fontSize="2.6">{a.name}</text>
+                    </g>
+                  </g>
+                );
+              })}
+            </g>
+          ))}
+        </svg>
+      </div>
+      <div className="cyber-meta">
+        {["l0","l1","l2","l3"].map((k, i) => {
+          const color = i === 0 ? "cyan" : i === 2 ? "amber" : i === 3 ? "" : "cyan";
+          const colStyle = i === 3 ? {color: "var(--violet)"} : {};
+          return (
+            <div className="cyber-block" key={k}>
+              <div className={"mono upper " + color} style={{fontSize: 11, ...colStyle}}>{t("cs_" + k)}</div>
+              <div className="serif" style={{fontSize: i === 0 ? 26 : 22}}>{t("cs_" + k + "t")}</div>
+              <p className="dim">{t("cs_" + k + "p")}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+window.VisionSection = VisionSection;
+window.SectionHead = SectionHead;
+
+  </script>
+  <script type="text/babel">
+// === Embodied & Ambient AI section ===
+
+function Embodied() {
+  const { t } = React.useContext(window.LangContext);
+  const planes = [
+    { k: "body",  code: "EM-01", color: "var(--cyan)",   units: "12,840", qps: "—",      glyph: <HumanoidGlyph/>,    nodes: ["Humanoid", "Quadruped", "Workcell arm", "Service bot"] },
+    { k: "wear",  code: "EM-02", color: "var(--amber)",  units: "2.1M",   qps: "94K",    glyph: <GlassesGlyph/>,     nodes: ["AR glasses", "Earpiece", "Ring", "Patch"] },
+    { k: "home",  code: "EM-03", color: "var(--violet)", units: "480K",   qps: "1.2M",   glyph: <RoomGlyph/>,        nodes: ["Smart wall", "Desk surface", "Ambient lamp", "ClawClip dock"] },
+    { k: "cloud", code: "EM-04", color: "var(--cyan)",   units: "42",     qps: "9.4M",   glyph: <CloudGlyph/>,       nodes: ["Clawbase cluster", "Public inference", "Edge POP", "Standard registry"] },
+  ];
+  return (
+    <section className="embodied" id="embodied">
+      <window.SectionHead idx="03" label={t("s3_label")} caption={t("s3_caption")} />
+      <p className="emb-intro">{t("eb_intro")}</p>
+
+      <div className="emb-diagram" aria-hidden>
+        <div className="emb-rings">
+          {[1,2,3,4].map(i => <div key={i} className={`emb-ring r${i}`} />)}
+          <div className="emb-core">
+            <svg viewBox="-20 -20 40 40">
+              <circle r="14" fill="none" stroke="var(--cyan)" strokeWidth="0.5" opacity="0.7"/>
+              <circle r="6" fill="var(--cyan)" opacity="0.9"/>
+              <text y="2" textAnchor="middle" fontFamily="Instrument Serif" fontStyle="italic" fontSize="9" fill="var(--bg-0)">42</text>
+            </svg>
+          </div>
+          {/* satellites placed around the rings */}
+          {[
+            { c: "🦾", a: -85, r: 28, label: "Humanoid" },
+            { c: "🐕", a: -50, r: 27, label: "Quad" },
+            { c: "👓", a: -25, r: 35, label: "AR" },
+            { c: "💍", a:  10, r: 33, label: "Ring" },
+            { c: "🏠", a:  45, r: 38, label: "Home" },
+            { c: "💡", a:  75, r: 37, label: "Lamp" },
+            { c: "🛰", a: 115, r: 42, label: "POP" },
+            { c: "☁",  a: 160, r: 44, label: "Cloud" },
+            { c: "🚗", a: 200, r: 36, label: "Vehicle" },
+            { c: "📎", a: 235, r: 30, label: "ClawClip" },
+            { c: "🎧", a: 270, r: 26, label: "Earpiece" },
+            { c: "🪞", a: 305, r: 33, label: "Mirror" },
+          ].map((s, i) => {
+            const x = 50 + Math.cos(s.a * Math.PI / 180) * s.r;
+            const y = 50 + Math.sin(s.a * Math.PI / 180) * s.r;
+            return (
+              <div key={i} className="emb-sat" style={{ left: `${x}%`, top: `${y}%` }}>
+                <div className="emb-sat-dot" />
+                <div className="emb-sat-label mono">{s.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="emb-grid">
+        {planes.map(p => (
+          <article key={p.k} className="emb-card" style={{ "--c": p.color }}>
+            <div className="emb-card-head">
+              <span className="mono dim" style={{fontSize: 11}}>{p.code}</span>
+              <span className="mono upper" style={{fontSize: 10, color: p.color}}>{t("eb_legend")}</span>
+            </div>
+            <div className="emb-glyph" style={{color: p.color}}>{p.glyph}</div>
+            <h3 className="serif emb-title">{t("eb_" + p.k)}</h3>
+            <p className="emb-desc">{t("eb_" + p.k + "_d")}</p>
+            <ul className="emb-nodes">
+              {p.nodes.map(n => <li key={n} className="mono">{n}</li>)}
+            </ul>
+            <div className="emb-stats mono">
+              <div><span className="dim">{t("eb_units")}</span><b>{p.units}</b></div>
+              <div><span className="dim">{t("eb_qps")}</span><b>{p.qps}</b></div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function HumanoidGlyph() {
+  const c = { fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round" };
+  return (
+    <svg viewBox="0 0 48 48" width="44" height="44">
+      <circle cx="24" cy="10" r="5" {...c}/>
+      <line x1="24" y1="15" x2="24" y2="32" {...c}/>
+      <line x1="24" y1="20" x2="14" y2="26" {...c}/>
+      <line x1="24" y1="20" x2="34" y2="26" {...c}/>
+      <line x1="24" y1="32" x2="18" y2="44" {...c}/>
+      <line x1="24" y1="32" x2="30" y2="44" {...c}/>
+      <circle cx="14" cy="26" r="1.2" fill="currentColor"/>
+      <circle cx="34" cy="26" r="1.2" fill="currentColor"/>
+    </svg>
+  );
+}
+function GlassesGlyph() {
+  const c = { fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round" };
+  return (
+    <svg viewBox="0 0 48 48" width="44" height="44">
+      <rect x="6" y="18" width="14" height="10" rx="2" {...c}/>
+      <rect x="28" y="18" width="14" height="10" rx="2" {...c}/>
+      <line x1="20" y1="23" x2="28" y2="23" {...c}/>
+      <line x1="6" y1="23" x2="2" y2="20" {...c}/>
+      <line x1="42" y1="23" x2="46" y2="20" {...c}/>
+      <circle cx="13" cy="23" r="1.5" fill="currentColor" opacity="0.7"/>
+    </svg>
+  );
+}
+function RoomGlyph() {
+  const c = { fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round" };
+  return (
+    <svg viewBox="0 0 48 48" width="44" height="44">
+      <path d="M6 18 L24 6 L42 18 L42 40 L6 40 Z" {...c}/>
+      <rect x="20" y="26" width="8" height="14" {...c}/>
+      <circle cx="14" cy="24" r="1.5" fill="currentColor"/>
+      <circle cx="34" cy="24" r="1.5" fill="currentColor"/>
+      <line x1="6" y1="40" x2="42" y2="40" {...c} strokeWidth="0.6" opacity="0.5"/>
+    </svg>
+  );
+}
+function CloudGlyph() {
+  const c = { fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round" };
+  return (
+    <svg viewBox="0 0 48 48" width="44" height="44">
+      <path d="M10 30 Q10 18 22 18 Q26 10 34 14 Q42 14 42 24 Q42 32 32 32 L14 32 Q10 32 10 30 Z" {...c}/>
+      <line x1="14" y1="38" x2="14" y2="42" {...c}/>
+      <line x1="24" y1="38" x2="24" y2="42" {...c}/>
+      <line x1="34" y1="38" x2="34" y2="42" {...c}/>
+    </svg>
+  );
+}
+
+window.Embodied = Embodied;
+
+  </script>
+  <script type="text/babel">
+// === Product constellation — interactive star map ===
+
+function Constellation() {
+  const { t } = React.useContext(window.LangContext);
+  const [active, setActive] = React.useState(null);
+  const [hover, setHover] = React.useState(null);
+  const products = window.PRODUCTS;
+  const planes = window.PLANES;
+  const tp = (id, k) => (window.TP[id] && window.TP[id][window.__LANG__] && window.TP[id][window.__LANG__][k]) || "";
+
+  const edges = [
+    ["starclaw", "starwork"], ["starclaw", "staryme"],
+    ["starclaw", "clawclip"], ["starclaw", "clawuuid"],
+    ["clawbase", "clawfin"], ["clawbase", "clawtax"],
+    ["clawbase", "clawcoco"], ["clawbase", "clawher"],
+    ["clawpkg", "clawlego"], ["clawuuid", "clawlego"],
+    ["clawbase", "clawpkg"], ["clawbase", "clawuuid"],
+    ["starclaw", "clawpkg"], ["starclaw", "clawlego"],
+  ];
+  const byId = Object.fromEntries(products.map(p => [p.id, p]));
+  const cur = active ? byId[active] : (hover ? byId[hover] : null);
+  const planeLabels = window.PLANE_LABELS[window.__LANG__] || window.PLANE_LABELS["zh-CN"];
+
+  return (
+    <section className="constellation" id="constellation">
+      <window.SectionHead idx="04" label={t("s4_label")} caption={t("s4_caption")} />
+      <div className="const-wrap">
+        <div className="const-map">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <g opacity="0.4">
+              {[0,25,50,75,100].map(v => (
+                <g key={v}>
+                  <line x1={v} y1="0" x2={v} y2="100" stroke="var(--line)" strokeWidth="0.1"/>
+                  <line x1="0" y1={v} x2="100" y2={v} stroke="var(--line)" strokeWidth="0.1"/>
+                </g>
+              ))}
+            </g>
+            {edges.map(([a, b], i) => {
+              const A = byId[a], B = byId[b]; if (!A || !B) return null;
+              const isActive = cur && (cur.id === a || cur.id === b);
+              return <line key={i} x1={A.coord.x} y1={A.coord.y} x2={B.coord.x} y2={B.coord.y}
+                stroke={isActive ? "var(--cyan)" : "var(--line-strong)"} strokeWidth={isActive ? "0.25" : "0.12"}
+                strokeDasharray={isActive ? "0" : "0.6 0.8"} opacity={isActive ? 0.9 : 0.55}/>;
+            })}
+            {products.map(p => {
+              const isCur = cur && cur.id === p.id;
+              const color = planes[p.plane].hue;
+              return (
+                <g key={p.id} onMouseEnter={() => setHover(p.id)} onMouseLeave={() => setHover(null)}
+                   onClick={() => setActive(active === p.id ? null : p.id)} style={{cursor:"pointer"}}>
+                  <circle cx={p.coord.x} cy={p.coord.y} r={isCur ? 3 : 2.2} fill={color} opacity={isCur ? 1 : 0.75}/>
+                  <circle cx={p.coord.x} cy={p.coord.y} r={isCur ? 5.5 : 4} fill="none" stroke={color} strokeWidth="0.18" opacity="0.6"/>
+                  {isCur && (
+                    <circle cx={p.coord.x} cy={p.coord.y} r="8" fill="none" stroke={color} strokeWidth="0.12" opacity="0.4">
+                      <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                  )}
+                  <text x={p.coord.x + 3} y={p.coord.y + 0.8} fill={isCur ? "var(--fg)" : "var(--fg-dim)"} fontFamily="var(--f-mono)" fontSize="2" opacity={isCur ? 1 : 0.7}>{p.code}</text>
+                  <text x={p.coord.x + 3} y={p.coord.y + 3.6} fill={isCur ? "var(--fg)" : "var(--fg-mute)"} fontFamily="var(--f-sans)" fontSize="2.2" fontWeight="500">{p.name}</text>
+                </g>
+              );
+            })}
+          </svg>
+          <div className="const-axes mono dim">
+            <span className="ax ax-tl">{t("ax_tl")}</span>
+            <span className="ax ax-tr">{t("ax_tr")}</span>
+            <span className="ax ax-bl">{t("ax_bl")}</span>
+            <span className="ax ax-br">{t("ax_br")}</span>
+          </div>
+        </div>
+        <aside className="const-panel">
+          <div className="const-panel-head mono upper dim">
+            <span><i className="dot-cyan"></i>{t("cn_panel")}</span>
+            <span>{cur ? cur.code : "—"}</span>
+          </div>
+          {!cur && (
+            <div className="const-empty">
+              <div className="serif" style={{fontSize: 28, lineHeight: 1.2}}>{t("cn_empty_t")}</div>
+              <p className="dim">{t("cn_empty_p")}</p>
+              <div className="const-legend">
+                {Object.entries(planes).map(([k, v]) => (
+                  <div key={k} className="leg-row">
+                    <span className="leg-dot" style={{background: v.hue}}></span>
+                    <span className="mono">{planeLabels[k]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {cur && (
+            <div className="const-detail">
+              <div className="mono upper" style={{color: planes[cur.plane].hue, fontSize: 11}}>
+                {planeLabels[cur.plane]} · {cur.form}
+              </div>
+              <h3 className="serif">{cur.name}</h3>
+              <div className="mono dim" style={{marginTop: -8, marginBottom: 16, fontSize: 12}}>{tp(cur.id, "tag")}</div>
+              <p>{tp(cur.id, "pitch")}</p>
+              <div className="const-stat mono">{cur.stat}</div>
+              <button className="cta" style={{marginTop: 16}}>{t("cn_open")} {cur.name} →</button>
+            </div>
+          )}
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+window.Constellation = Constellation;
+
+  </script>
+  <script type="text/babel">
+// === Product matrix — categorized grid ===
+
+function Matrix() {
+  const { t } = React.useContext(window.LangContext);
+  const products = window.PRODUCTS;
+  const planes = window.PLANES;
+  const groups = ["personal", "enterprise", "vertical", "standard", "hardware"];
+  const planeLabels = window.PLANE_LABELS[window.__LANG__] || window.PLANE_LABELS["zh-CN"];
+  return (
+    <section className="matrix" id="matrix">
+      <window.SectionHead idx="05" label={t("s5_label")} caption={t("s5_caption")} />
+      <div className="mx-list">
+        {groups.map(g => {
+          const list = products.filter(p => p.plane === g);
+          return (
+            <div className="mx-group" key={g}>
+              <div className="mx-group-head">
+                <div className="mono upper" style={{fontSize: 11, color: planes[g].hue}}>{t("mx_plane")} · {planes[g].code}</div>
+                <div className="serif mx-group-title">{planeLabels[g]}</div>
+                <div className="mono mute" style={{fontSize: 12}}>{list.length} {t("mx_products")}</div>
+              </div>
+              <div className="mx-cards">
+                {list.map(p => <ProductCard key={p.id} p={p} plane={planes[p.plane]} />)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function ProductCard({ p, plane }) {
+  const tp = (k) => (window.TP[p.id] && window.TP[p.id][window.__LANG__] && window.TP[p.id][window.__LANG__][k]) || "";
+  return (
+    <a className="pcard" href={`#${p.id}`} onClick={(e) => e.preventDefault()}>
+      <div className="pcard-top">
+        <span className="mono dim" style={{fontSize: 11}}>{p.code}</span>
+        <span className="mono upper" style={{fontSize: 10, color: plane.hue}}>{plane.code}</span>
+      </div>
+      <div className="pcard-icon" aria-hidden><FormGlyph form={p.form} /></div>
+      <div className="pcard-name serif">{p.name}</div>
+      <div className="pcard-tag mono dim">{tp("tag")}</div>
+      <p className="pcard-pitch">{tp("pitch")}</p>
+      <div className="pcard-foot">
+        <span className="mono mute" style={{fontSize: 11}}>{p.stat}</span>
+        <span className="pcard-arrow mono">→</span>
+      </div>
+    </a>
+  );
+}
+
+function FormGlyph({ form }) {
+  const c = { fill: "none", stroke: "currentColor", strokeWidth: 1.2, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (form === "mobile") return (<svg viewBox="0 0 48 48" width="40" height="40"><rect x="14" y="6" width="20" height="36" rx="3" {...c}/><line x1="20" y1="38" x2="28" y2="38" {...c}/><line x1="14" y1="12" x2="34" y2="12" {...c} opacity="0.4"/></svg>);
+  if (form === "desktop") return (<svg viewBox="0 0 48 48" width="40" height="40"><rect x="4" y="10" width="40" height="26" rx="2" {...c}/><line x1="18" y1="42" x2="30" y2="42" {...c}/><line x1="24" y1="36" x2="24" y2="42" {...c}/><circle cx="24" cy="23" r="3" {...c}/></svg>);
+  if (form === "platform") return (<svg viewBox="0 0 48 48" width="40" height="40"><rect x="6" y="8" width="36" height="8" rx="1" {...c}/><rect x="6" y="20" width="36" height="8" rx="1" {...c}/><rect x="6" y="32" width="36" height="8" rx="1" {...c}/><circle cx="11" cy="12" r="1" fill="currentColor"/><circle cx="11" cy="24" r="1" fill="currentColor"/><circle cx="11" cy="36" r="1" fill="currentColor"/></svg>);
+  if (form === "saas") return (<svg viewBox="0 0 48 48" width="40" height="40"><path d="M10 30 Q10 18 22 18 Q26 10 34 14 Q42 14 42 24 Q42 32 32 32 L14 32 Q10 32 10 30 Z" {...c}/><circle cx="24" cy="38" r="1.4" fill="currentColor"/><circle cx="20" cy="40" r="1" fill="currentColor"/><circle cx="28" cy="40" r="1" fill="currentColor"/></svg>);
+  if (form === "spec") return (<svg viewBox="0 0 48 48" width="40" height="40"><path d="M14 6 L30 6 L38 14 L38 42 L14 42 Z" {...c}/><polyline points="30,6 30,14 38,14" {...c}/><line x1="18" y1="22" x2="34" y2="22" {...c} opacity="0.6"/><line x1="18" y1="28" x2="34" y2="28" {...c} opacity="0.6"/><line x1="18" y1="34" x2="28" y2="34" {...c} opacity="0.6"/></svg>);
+  if (form === "marketplace") return (<svg viewBox="0 0 48 48" width="40" height="40"><rect x="6" y="6" width="16" height="16" {...c}/><rect x="26" y="6" width="16" height="16" {...c}/><rect x="6" y="26" width="16" height="16" {...c}/><rect x="26" y="26" width="16" height="16" {...c} strokeDasharray="2 2"/></svg>);
+  if (form === "device") return (<svg viewBox="0 0 48 48" width="40" height="40"><rect x="10" y="14" width="28" height="20" rx="3" {...c}/><circle cx="24" cy="24" r="4" {...c}/><line x1="6" y1="24" x2="10" y2="24" {...c}/><line x1="38" y1="24" x2="42" y2="24" {...c}/></svg>);
+  return null;
+}
+
+window.Matrix = Matrix;
+
+  </script>
+  <script type="text/babel">
+// === Why 42? — cosmic mysteries section ===
+
+function Why42() {
+  const { t, lang } = React.useContext(window.LangContext);
+  const FACTS = {
+    "zh-CN": [
+      { code: "ASTRO · 042°",  title: "彩虹的角度",        body: "光线在水滴中折射，形成彩虹的最佳出射角为 42°。每一次抬头看见弧光，宇宙都在悄悄回答。" },
+      { code: "PHYSICS · Mo",  title: "钼的原子序数",      body: "元素周期表第 42 号位是钼 (Mo)：硬度、韧性、耐高温。航天、合金、酶催化都靠它撑着。" },
+      { code: "MATH · 42",     title: "三立方数之和",      body: "数论里 42 = (-80538738812075974)³ + 80435758145817515³ + 12602123297335631³。简单数字，藏着 2019 年才解出的庞然方程。" },
+      { code: "LIGHT · 42 lm", title: "蜡烛的尺度",        body: "1 烛光约 12.57 流明；让蜡烛的光在月夜照见你的脸，大约 42 cm 的距离最暖。" },
+      { code: "SETI · 1420 MHz", title: "氢线 ÷ 33.8",       body: "宇宙的‘宇宙背景旋律’氢谱线，正巧落在 1420 兆赫附近——把它折算回辐射温度，约 42 mK 的低噪。" },
+      { code: "LIFE · 42°",    title: "体温的 42°",         body: "哺乳动物体温的上限阈值是 42°C。再高，蛋白质就开始变形。42 是生与非生的分界。" },
+      { code: "TIME · 42 ms",  title: "意识的颗粒",         body: "人脑识别一个面孔大约 42 毫秒。比眨眼短，比一帧画面长。这是我们与世界交握的最短握手。" },
+      { code: "COSMOS · 42",   title: "可观测宇宙",         body: "可观测宇宙的直径约 9.3 × 10²⁶ 米；折算到自然单位，指数末尾常常停在 42 附近。" },
+    ],
+    "zh-TW": [
+      { code: "ASTRO · 042°",  title: "彩虹的角度",        body: "光線在水滴中折射，形成彩虹的最佳出射角為 42°。每一次抬頭看見弧光，宇宙都在悄悄回答。" },
+      { code: "PHYSICS · Mo",  title: "鉬的原子序數",      body: "元素週期表第 42 號位是鉬 (Mo)：硬度、韌性、耐高溫。航天、合金、酶催化都靠它撐著。" },
+      { code: "MATH · 42",     title: "三立方數之和",      body: "數論裡 42 = (-80538738812075974)³ + 80435758145817515³ + 12602123297335631³。簡單數字，藏著 2019 年才解出的龐然方程。" },
+      { code: "LIGHT · 42 lm", title: "蠟燭的尺度",        body: "1 燭光約 12.57 流明；讓蠟燭的光在月夜照見你的臉，大約 42 cm 的距離最暖。" },
+      { code: "SETI · 1420 MHz", title: "氫線 ÷ 33.8",       body: "宇宙的氫譜線正巧落在 1420 兆赫附近——把它折算回輻射溫度，約 42 mK 的低噪。" },
+      { code: "LIFE · 42°",    title: "體溫的 42°",         body: "哺乳動物體溫的上限閾值是 42°C。再高，蛋白質就開始變形。42 是生與非生的分界。" },
+      { code: "TIME · 42 ms",  title: "意識的顆粒",         body: "人腦辨識一個面孔大約 42 毫秒。比眨眼短，比一幀畫面長。" },
+      { code: "COSMOS · 42",   title: "可觀測宇宙",         body: "可觀測宇宙的直徑約 9.3 × 10²⁶ 米；折算到自然單位，指數末尾常常停在 42 附近。" },
+    ],
+    "en": [
+      { code: "ASTRO · 042°",  title: "The angle of a rainbow",    body: "Sunlight refracts inside a raindrop and emerges at 42°. Every time a rainbow appears, the cosmos quietly answers." },
+      { code: "PHYSICS · Mo",  title: "Element no. 42 — Molybdenum", body: "Hard, tough, heat-stubborn. It holds together rockets, alloys, and the enzymes that hold you together." },
+      { code: "MATH · 42",     title: "Sum of three cubes",         body: "42 = (-80538738812075974)³ + 80435758145817515³ + 12602123297335631³ — a 2019 result for a deceptively simple number." },
+      { code: "LIGHT · 42 lm", title: "Candle-scale",               body: "A candle is ~12.57 lumens. To see a face by candlelight on a moonless night, ~42 cm is the warmest distance." },
+      { code: "SETI · 1420 MHz", title: "Hydrogen line ÷ 33.8",      body: "The universe hums at the 1420 MHz hydrogen line. Convert it to brightness temperature and ~42 mK of noise floor stays." },
+      { code: "LIFE · 42°",    title: "The 42° of body heat",        body: "Mammals tap out at 42°C. Past that, proteins unfold. 42 is the seam between living and not." },
+      { code: "TIME · 42 ms",  title: "A grain of consciousness",    body: "The brain recognises a face in ~42 ms. Shorter than a blink, longer than a frame. The shortest handshake with the world." },
+      { code: "COSMOS · 42",   title: "The observable universe",     body: "Diameter ≈ 9.3 × 10²⁶ m. In natural units, the exponent keeps settling near 42." },
+    ],
+  };
+  const facts = FACTS[lang] || FACTS["zh-CN"];
+  const HEAD = {
+    "zh-CN": { label: "为什么是 42", caption: "宇宙留下的一组同名签到。", lead: "42 不是我们起的名字。是宇宙在 N 个独立的角落都写下的同一个数字——我们只是把它做成了可以调用的产品。" },
+    "zh-TW": { label: "為什麼是 42", caption: "宇宙留下的一組同名簽到。", lead: "42 不是我們起的名字。是宇宙在 N 個獨立的角落都寫下的同一個數字——我們只是把它做成了可以呼叫的產品。" },
+    "en":    { label: "WHY 42", caption: "A set of cosmic name-collisions.", lead: "We didn't pick the number. The universe wrote 42 down in many independent corners — we just turned it into something you can call()." },
+  }[lang] || {};
+
+  return (
+    <section className="why42" id="why42">
+      <window.SectionHead idx="06" label={HEAD.label} caption={HEAD.caption} />
+      <p className="why-lead">{HEAD.lead}</p>
+      <div className="why-grid">
+        {facts.map((f, i) => (
+          <article key={i} className="why-card">
+            <div className="why-num serif">{String(i + 1).padStart(2, "0")}</div>
+            <div className="why-code mono">{f.code}</div>
+            <h4 className="why-title serif">{f.title}</h4>
+            <p className="why-body">{f.body}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="why-orbit" aria-hidden>
+        <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
+          {Array.from({length: 42}).map((_, i) => {
+            const x = (i / 41) * 1200;
+            const y = 150 + Math.sin(i * 0.7) * 60;
+            return <circle key={i} cx={x} cy={y} r={i === 21 ? 6 : 2} fill={i === 21 ? "var(--cyan)" : "var(--fg-mute)"} opacity={i === 21 ? 1 : 0.5}/>;
+          })}
+          <path d="M 0 150 Q 600 30, 1200 150" fill="none" stroke="var(--cyan)" strokeWidth="0.5" opacity="0.4" strokeDasharray="4 6"/>
+          <text x="600" y="60" textAnchor="middle" fontFamily="Instrument Serif" fontStyle="italic" fontSize="56" fill="var(--cyan)" opacity="0.9">42</text>
+          <text x="600" y="92" textAnchor="middle" fontFamily="JetBrains Mono" fontSize="11" letterSpacing="3" fill="var(--fg-mute)">THE NUMBER · INDEX 21 OF 42</text>
+        </svg>
+      </div>
+    </section>
+  );
+}
+
+window.Why42 = Why42;
+
+  </script>
+  <script type="text/babel">
+// === App shell + manifesto + footer + lang provider ===
+
+function Manifesto() {
+  const { t } = React.useContext(window.LangContext);
+  const items = t("man");
+  return (
+    <section className="manifesto" id="manifesto">
+      <window.SectionHead idx="06" label={t("s6_label")} caption={t("s6_caption")} />
+      <div className="man-grid">
+        <div className="man-art">
+          <svg viewBox="0 0 200 200">
+            <defs>
+              <radialGradient id="mg" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="var(--cyan)" stopOpacity="0.9"/>
+                <stop offset="60%" stopColor="var(--cyan)" stopOpacity="0.05"/>
+                <stop offset="100%" stopColor="var(--cyan)" stopOpacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="100" cy="100" r="80" fill="url(#mg)"/>
+            <circle cx="100" cy="100" r="60" fill="none" stroke="var(--cyan)" strokeWidth="0.5" opacity="0.4"/>
+            <circle cx="100" cy="100" r="40" fill="none" stroke="var(--cyan)" strokeWidth="0.5" opacity="0.6"/>
+            <circle cx="100" cy="100" r="22" fill="var(--bg-0)" stroke="var(--cyan)" strokeWidth="1"/>
+            <text x="100" y="111" textAnchor="middle" fontFamily="Instrument Serif" fontStyle="italic" fontSize="36" fill="var(--cyan)">42</text>
+            {Array.from({length: 24}).map((_, i) => {
+              const a = (i / 24) * Math.PI * 2;
+              const x1 = 100 + Math.cos(a) * 88, y1 = 100 + Math.sin(a) * 88;
+              const x2 = 100 + Math.cos(a) * (i % 6 === 0 ? 80 : 84);
+              const y2 = 100 + Math.sin(a) * (i % 6 === 0 ? 80 : 84);
+              return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--fg-dim)" strokeWidth={i % 6 === 0 ? 1 : 0.4}/>;
+            })}
+          </svg>
+        </div>
+        <ol className="man-list">
+          {items.map(([title, body], i) => (
+            <li key={i}><span className="mono cyan">{String(i + 1).padStart(3, "0")} ·</span> <strong>{title}</strong>
+              <p className="dim">{body}</p></li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="man-pullquote serif">
+        {t("pull")}
+        <div className="mono dim" style={{fontSize: 11, marginTop: 16, letterSpacing: "0.18em"}}>{t("pull_sig")}</div>
+      </div>
+    </section>
+  );
+}
+
+function CTABanner() {
+  const { t } = React.useContext(window.LangContext);
+  const ct = t("cta_t");
+  return (
+    <section className="ctab">
+      <div className="ctab-inner">
+        <div>
+          <div className="mono upper cyan" style={{fontSize: 11}}>{t("cta_kicker")}</div>
+          <h3 className="serif" style={{fontSize: "clamp(36px, 5vw, 56px)", margin: "12px 0"}}>
+            {ct[0]}<span className="dim">{ct[1]}</span>{ct[2]}
+          </h3>
+          <p className="dim" style={{maxWidth: 540}}>{t("cta_p")}</p>
+        </div>
+        <div className="ctab-right">
+          <button className="cta">{t("cta_b1")}</button>
+          <button className="cta ghost">{t("cta_b2")}</button>
+          <div className="mono mute" style={{fontSize: 11, marginTop: 12}}>{t("cta_note")}</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  const { t } = React.useContext(window.LangContext);
+  const planes = window.PLANES;
+  const products = window.PRODUCTS;
+  const labels = window.PLANE_LABELS[window.__LANG__] || window.PLANE_LABELS["zh-CN"];
+  const byPlane = (k) => products.filter(p => p.plane === k);
+  return (
+    <footer className="footer">
+      <div className="foot-grid">
+        <div className="foot-brand">
+          <div className="brand">
+            <span className="brand-mark">
+              <svg viewBox="0 0 24 24" width="22" height="22">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.4"/>
+                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                <path d="M12 2 L12 6 M12 18 L12 22 M2 12 L6 12 M18 12 L22 12" stroke="currentColor" strokeWidth="1" opacity="0.6"/>
+              </svg>
+            </span>
+            <span className="brand-text"><span className="brand-num">42</span>Star</span>
+          </div>
+          <p className="dim" style={{maxWidth: 280, marginTop: 18}}>{t("foot_p")}</p>
+          <div className="tag" style={{marginTop: 20}}><span className="dot"></span>{t("foot_obs")}</div>
+        </div>
+        {Object.entries(planes).map(([k, v]) => (
+          <div key={k} className="foot-col">
+            <div className="mono upper" style={{fontSize: 10, color: v.hue}}>{labels[k]}</div>
+            <ul>
+              {byPlane(k).map(p => (
+                <li key={p.id}><a href={`#${p.id}`}>{p.name} <span className="mute mono" style={{fontSize: 11}}>{p.code}</span></a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <hr className="hairline" style={{margin: "48px 0 24px"}}/>
+      <div className="foot-bot mono dim">
+        <span>© 2042–∞  42Star.ai  ·  Beijing · Hangzhou · Orbit</span>
+        <span>v0.42.0</span>
+        <span>Privacy · Terms · Charter</span>
+      </div>
+    </footer>
+  );
+}
+
+function App() {
+  const [lang, setLangState] = React.useState(() => {
+    try { return localStorage.getItem("42star.lang") || "zh-CN"; } catch (e) { return "zh-CN"; }
+  });
+  React.useEffect(() => {
+    window.__LANG__ = lang;
+    document.documentElement.lang = lang;
+    try { localStorage.setItem("42star.lang", lang); } catch (e) {}
+  }, [lang]);
+  window.__LANG__ = lang;
+  const setLang = (v) => setLangState(v);
+  const t = (k) => { const d = window.T[lang] || window.T["zh-CN"]; return d[k] !== undefined ? d[k] : k; };
+  const ctx = { lang, setLang, t };
+  return (
+    <window.LangContext.Provider value={ctx}>
+      <div className="ambient"></div>
+      <window.Starfield />
+      <main>
+        <window.TopNav />
+        <window.Hero />
+        <window.VisionSection />
+        <window.Embodied />
+        <window.Constellation />
+        <window.Matrix />
+        <window.Why42 />
+        <Manifesto />
+        <CTABanner />
+        <Footer />
+      </main>
+    </window.LangContext.Provider>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+  </script>
+</body>
+</html>
