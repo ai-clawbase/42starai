@@ -15,4 +15,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: a595d4671caf989f8a5a8514f4e90e8a
-          command: pages deploy . --project-name=42starai --branch=main --commit-dirty=true
+          command: pages deploy . --project-name=42starai --branch=main
