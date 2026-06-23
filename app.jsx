@@ -95,7 +95,7 @@ function Plans() {
 function Download() {
   const { t } = React.useContext(window.LangContext);
   const items = t("dl");
-  const href = (os) => os === "Web" ? "https://app.42star.ai" : ("https://app.42star.ai/download/" + os.toLowerCase());
+  const href = (os) => os === "Web" ? "https://app.clawlego.com" : "https://clawlego.com";
   return (
     <section className="download" id="download">
       <window.SectionHead idx="08" label={t("s8_label")} caption={t("s8_caption")} />
