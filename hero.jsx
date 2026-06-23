@@ -41,6 +41,8 @@ function TopNav() {
         <a href="#constellation">{t("nav_constellation")}</a>
         <a href="#matrix">{t("nav_matrix")}</a>
         <a href="#manifesto">{t("nav_manifesto")}</a>
+        <a href="#plans">{t("nav_plans")}</a>
+        <a href="#download">{t("nav_download")}</a>
       </nav>
       <div className="nav-right">
         <LangSwitcher lang={lang} setLang={setLang} />

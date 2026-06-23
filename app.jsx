@@ -46,6 +46,80 @@ function Manifesto() {
   );
 }
 
+function Plans() {
+  const { t } = React.useContext(window.LangContext);
+  const plans = t("plans");
+  const hrefs = {
+    explorer: "https://app.42star.ai/signup",
+    cyberself: "https://app.42star.ai/checkout?plan=pro",
+    constellation: "https://app.42star.ai/checkout?plan=team",
+  };
+  return (
+    <section className="plans" id="plans">
+      <window.SectionHead idx="07" label={t("s7_label")} caption={t("s7_caption")} />
+      <p className="plans-intro">{t("plans_intro")}</p>
+      <div className="plan-grid">
+        {plans.map((p) => {
+          const feature = p.id === "cyberself";
+          return (
+            <div key={p.id} className={"plan-card" + (feature ? " is-feature" : "")}>
+              {p.badge && <div className="plan-badge">{p.badge}</div>}
+              <div className="plan-code">{p.code}</div>
+              <div className="plan-name">{p.name}</div>
+              <div className="plan-price">
+                <span className="plan-amount">{p.price}</span>
+                <span className="plan-period">{p.period}</span>
+              </div>
+              <div className="plan-tagline">{p.tagline}</div>
+              <ul className="plan-feats">
+                {p.features.map((f, i) => <li key={i}><span>✦</span>{f}</li>)}
+              </ul>
+              <a className={"plan-cta" + (feature ? " is-primary" : "")} href={hrefs[p.id]}>{p.cta}</a>
+              {p.note && <div className="plan-note">{p.note}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="plan-ent">
+        <div>
+          <div className="plan-ent-t">{t("plans_ent_t")}</div>
+          <p className="plan-ent-p">{t("plans_ent_p")}</p>
+        </div>
+        <a className="plan-cta" href="mailto:sales@42star.ai">{t("plans_ent_b")}</a>
+      </div>
+      <div className="plan-billnote">{t("plans_note")}</div>
+    </section>
+  );
+}
+
+function Download() {
+  const { t } = React.useContext(window.LangContext);
+  const items = t("dl");
+  const href = (os) => os === "Web" ? "https://app.42star.ai" : ("https://app.42star.ai/download/" + os.toLowerCase());
+  return (
+    <section className="download" id="download">
+      <window.SectionHead idx="08" label={t("s8_label")} caption={t("s8_caption")} />
+      <p className="dl-intro">{t("dl_intro")}</p>
+      <div className="dl-grid">
+        {items.map((d, i) => (
+          <div key={i} className="dl-card">
+            <div className="dl-os">
+              <span className="dl-kind">{d.kind}</span>
+              <span className="dl-os-name">{d.os}</span>
+            </div>
+            <div className="dl-meta">{d.meta}</div>
+            <div className="dl-foot">
+              <span className="dl-ver">{d.ver}</span>
+              <a className={"dl-btn" + (d.os === "Web" ? " is-primary" : "")} href={href(d.os)}>{d.cta} →</a>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="dl-note">{t("dl_note")}</div>
+    </section>
+  );
+}
+
 function CTABanner() {
   const { t } = React.useContext(window.LangContext);
   const ct = t("cta_t");
@@ -107,7 +181,7 @@ function Footer() {
       <div className="foot-bot mono dim">
         <span>© 2042–∞  42Star.ai  ·  Chengdu · Hangzhou · Orbit</span>
         <span>v0.42.0</span>
-        <span>Privacy · Terms · Charter</span>
+        <span>Privacy · Terms · Refund · Charter</span>
       </div>
     </footer>
   );
@@ -139,6 +213,8 @@ function App() {
         <window.Matrix />
         <window.Why42 />
         <Manifesto />
+        <Plans />
+        <Download />
         <CTABanner />
         <Footer />
       </main>

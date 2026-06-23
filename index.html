@@ -483,6 +483,61 @@ button.cta.ghost:hover { border-color: var(--fg); color: var(--fg); background: 
 .why-orbit svg { width: 100%; height: 100%; display: block; }
 @media (max-width: 960px) { .why-grid { grid-template-columns: 1fr 1fr; } }
 
+
+/* === plans / pricing === */
+.plans-intro { font-size: 16px; line-height: 1.7; color: var(--fg-dim); max-width: 760px; margin: -24px 0 48px; }
+.plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); }
+.plan-card { background: var(--bg-1); padding: 34px 28px; display: flex; flex-direction: column; gap: 14px; position: relative; transition: background 200ms; overflow: hidden; }
+.plan-card:hover { background: var(--bg-2); }
+.plan-card.is-feature { background: linear-gradient(180deg, oklch(0.18 0.05 200 / 0.45), var(--bg-1)); box-shadow: inset 0 2px 0 var(--cyan); }
+.plan-badge { position: absolute; top: 0; right: 0; font-family: var(--f-mono); font-size: 9px; color: var(--bg-0); background: var(--cyan); padding: 4px 11px; letter-spacing: 0.18em; }
+.plan-code { font-family: var(--f-mono); font-size: 10px; color: var(--fg-mute); letter-spacing: 0.18em; }
+.plan-name { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 34px; line-height: 1; color: var(--fg); }
+.plan-price { display: flex; align-items: baseline; gap: 6px; margin: 2px 0 2px; }
+.plan-amount { font-family: var(--f-display); font-style: italic; font-size: 48px; line-height: 1; color: var(--fg); }
+.plan-period { font-family: var(--f-mono); font-size: 12px; color: var(--fg-mute); letter-spacing: 0.1em; }
+.plan-tagline { font-size: 13px; line-height: 1.5; color: var(--fg-dim); min-height: 38px; }
+.plan-feats { list-style: none; margin: 6px 0 0; padding: 16px 0 0; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.plan-feats li { font-size: 13px; color: var(--fg-dim); line-height: 1.45; display: flex; gap: 9px; }
+.plan-feats li > span { flex-shrink: 0; color: var(--cyan); }
+.plan-cta, .dl-btn {
+  display: inline-block; text-align: center; text-decoration: none;
+  font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em;
+  padding: 13px 22px; border: 1px solid var(--line-strong); border-radius: 2px;
+  color: var(--fg-dim); background: transparent; cursor: pointer; transition: all 160ms ease; margin-top: 4px;
+}
+.plan-cta:hover, .dl-btn:hover { border-color: var(--fg); color: var(--fg); background: oklch(1 0 0 / 0.04); }
+.plan-cta.is-primary { border-color: var(--cyan); color: var(--cyan); background: oklch(0.82 0.16 200 / 0.08); }
+.plan-cta.is-primary:hover { background: var(--cyan); color: var(--bg-0); box-shadow: 0 0 24px oklch(0.82 0.16 200 / 0.5); }
+.plan-note { font-family: var(--f-mono); font-size: 10px; text-align: center; color: var(--fg-mute); margin-top: 2px; letter-spacing: 0.03em; }
+.plan-ent { margin-top: 1px; display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 28px 32px; border: 1px solid var(--line-strong); background: var(--bg-1); }
+.plan-ent-t { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 26px; color: var(--fg); }
+.plan-ent-p { font-size: 13px; line-height: 1.6; color: var(--fg-dim); margin: 6px 0 0; max-width: 640px; }
+.plan-ent .dl-btn, .plan-ent .plan-cta { white-space: nowrap; }
+.plan-billnote { margin-top: 28px; font-family: var(--f-mono); font-size: 11px; line-height: 1.8; color: var(--fg-mute); letter-spacing: 0.02em; max-width: 920px; }
+
+/* === download === */
+.dl-intro { font-size: 16px; line-height: 1.7; color: var(--fg-dim); max-width: 780px; margin: -24px 0 48px; }
+.dl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line-strong); border: 1px solid var(--line-strong); }
+.dl-card { background: var(--bg-1); padding: 26px 24px; display: flex; flex-direction: column; gap: 10px; position: relative; transition: background 200ms; }
+.dl-card:hover { background: var(--bg-2); }
+.dl-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--cyan); opacity: 0.55; }
+.dl-os { display: flex; align-items: center; gap: 10px; }
+.dl-kind { font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-mute); border: 1px solid var(--line); padding: 2px 6px; }
+.dl-os-name { font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 28px; line-height: 1; color: var(--fg); }
+.dl-meta { font-size: 12px; color: var(--fg-dim); line-height: 1.55; flex: 1; }
+.dl-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.dl-ver { font-family: var(--f-mono); font-size: 10px; color: var(--fg-mute); letter-spacing: 0.12em; }
+.dl-btn { padding: 9px 16px; font-size: 11px; letter-spacing: 0.14em; margin-top: 0; }
+.dl-btn.is-primary { border-color: var(--cyan); color: var(--cyan); background: oklch(0.82 0.16 200 / 0.08); }
+.dl-btn.is-primary:hover { background: var(--cyan); color: var(--bg-0); box-shadow: 0 0 20px oklch(0.82 0.16 200 / 0.45); }
+.dl-note { margin-top: 28px; font-family: var(--f-mono); font-size: 11px; line-height: 1.8; color: var(--fg-mute); max-width: 840px; }
+
+@media (max-width: 960px) {
+  .plan-grid, .dl-grid { grid-template-columns: 1fr; }
+  .plan-ent { flex-direction: column; align-items: flex-start; }
+}
+
 </style>
 </head>
 <body>
@@ -616,6 +671,7 @@ const T = {
     lang_name: "简体中文",
     // nav
     nav_vision: "愿景", nav_constellation: "星图", nav_embodied: "具身", nav_matrix: "产品", nav_manifesto: "宣言",
+    nav_plans: "订阅", nav_download: "下载",
     nav_signin: "登录", nav_est: "成立于 2042",
     // hero
     h_prelude: "卷 042 · AI 原生社会 · 公开广播",
@@ -679,6 +735,39 @@ const T = {
     cta_p: "注册即获得一个官方签发的 Agent 护照、一个 StarClaw 工作空间，和一份属于你的 ClawPkg 模板。剩下的，你的 Agent 会处理。",
     cta_b1: "获取我的 UUID  →", cta_b2: "与 Agent 对话",
     cta_note: "早期轨道期免费 · 无需信用卡",
+    // plans
+    s7_label: "订阅计划", s7_caption: "选择你的轨道。",
+    plans_intro: "从免费体验到企业私有化部署，按需付费。所有付费计划均可随时取消，并享 7 天无理由退款。",
+    plans: [
+      { id: "explorer", name: "探索者", code: "PLAN · FREE", price: "¥0", period: "/ 月", badge: "",
+        tagline: "为第一次拥有 Agent 的你。",
+        features: ["1 个 StarClaw 工作空间", "3 个贴身层本地 Agent", "社区版 ClawPkg 模板", "推理额度 200 次 / 日", "社区支持"],
+        cta: "免费开始" },
+      { id: "cyberself", name: "赛博分身", code: "PLAN · PRO", price: "¥42", period: "/ 月", badge: "最受欢迎",
+        tagline: "完整的 cyber-self，人人都该拥有。",
+        features: ["无限本地 Agent + 12 个领域 Agent", "StarClaw / StarWork / Staryme 全客户端", "官方签发 ClawUUID 护照", "推理额度 10,000 次 / 日", "ClawClip 硬件 8 折券", "优先支持"],
+        cta: "订阅 Pro", note: "按月 ¥42，或按年 ¥420（省 ¥84）" },
+      { id: "constellation", name: "星座", code: "PLAN · TEAM", price: "¥168", period: "/ 席·月", badge: "团队",
+        tagline: "让整个团队共享一片星空。",
+        features: ["Pro 全部权益 · 按席计费", "Clawbase 团队 AI 中台", "共享模板库 + ClawLego 市场", "组织级可观测性与审计", "SSO · 角色权限管理", "专属客户成功经理"],
+        cta: "购买席位" },
+    ],
+    plans_ent_t: "企业 · 定制部署",
+    plans_ent_p: "私有化 Clawbase、本地大模型、合规与 SLA。为银行、政企与大型组织量身打造。",
+    plans_ent_b: "联系销售 →",
+    plans_note: "所有价格均以人民币（CNY）计价并含增值税（13%）。支持 支付宝 · 微信支付 · 银行卡（Visa / Mastercard / 银联）。订阅自动按周期续费，可随时在账户中取消；新订阅自购买之日起 7 天内可申请无理由退款。",
+    // download
+    s8_label: "下载客户端", s8_caption: "把 Agent 带在身上。",
+    dl_intro: "一次注册，全平台同步。所有客户端均经 ClawUUID 数字签名校验，本地优先、端到端加密。",
+    dl: [
+      { os: "macOS", kind: "桌面", meta: "Apple Silicon · Intel · macOS 13+", ver: "v0.42.0 · 84 MB", cta: "下载 .dmg" },
+      { os: "Windows", kind: "桌面", meta: "Windows 10 / 11 · x64", ver: "v0.42.0 · 96 MB", cta: "下载 .exe" },
+      { os: "Linux", kind: "桌面", meta: ".AppImage · .deb · x64 / ARM", ver: "v0.42.0 · 88 MB", cta: "下载" },
+      { os: "iOS", kind: "移动", meta: "iPhone · iPad · iOS 16+", ver: "App Store", cta: "获取" },
+      { os: "Android", kind: "移动", meta: "Android 10+ · Google Play / APK", ver: "v0.42.0", cta: "获取" },
+      { os: "Web", kind: "网页", meta: "浏览器直达 · 无需安装", ver: "app.42star.ai", cta: "打开" },
+    ],
+    dl_note: "下载或使用任一客户端，即代表你已阅读并同意《服务条款》与《隐私政策》。系统要求与历史版本详见文档中心。",
     // footer
     foot_p: "为 AI 原生社会而构建的产品矩阵。",
     foot_obs: "天文台 · 开放",
@@ -687,6 +776,7 @@ const T = {
   "zh-TW": {
     lang_name: "繁體中文",
     nav_vision: "願景", nav_constellation: "星圖", nav_embodied: "具身", nav_matrix: "產品", nav_manifesto: "宣言",
+    nav_plans: "訂閱", nav_download: "下載",
     nav_signin: "登入", nav_est: "成立於 2042",
     h_prelude: "卷 042 · AI 原生社會 · 公開廣播",
     h_thesis: "命題",
@@ -743,6 +833,37 @@ const T = {
     cta_p: "註冊即獲得一個官方簽發的 Agent 護照、一個 StarClaw 工作空間，和一份屬於你的 ClawPkg 模板。剩下的，你的 Agent 會處理。",
     cta_b1: "獲取我的 UUID  →", cta_b2: "與 Agent 對話",
     cta_note: "早期軌道期免費 · 無需信用卡",
+    s7_label: "訂閱計劃", s7_caption: "選擇你的軌道。",
+    plans_intro: "從免費體驗到企業私有化部署，依需付費。所有付費計劃均可隨時取消，並享 7 天無理由退款。",
+    plans: [
+      { id: "explorer", name: "探索者", code: "PLAN · FREE", price: "¥0", period: "/ 月", badge: "",
+        tagline: "為第一次擁有 Agent 的你。",
+        features: ["1 個 StarClaw 工作空間", "3 個貼身層本地 Agent", "社群版 ClawPkg 模板", "推理額度 200 次 / 日", "社群支援"],
+        cta: "免費開始" },
+      { id: "cyberself", name: "賽博分身", code: "PLAN · PRO", price: "¥42", period: "/ 月", badge: "最受歡迎",
+        tagline: "完整的 cyber-self，人人都該擁有。",
+        features: ["無限本地 Agent + 12 個領域 Agent", "StarClaw / StarWork / Staryme 全客戶端", "官方簽發 ClawUUID 護照", "推理額度 10,000 次 / 日", "ClawClip 硬體 8 折券", "優先支援"],
+        cta: "訂閱 Pro", note: "按月 ¥42，或按年 ¥420（省 ¥84）" },
+      { id: "constellation", name: "星座", code: "PLAN · TEAM", price: "¥168", period: "/ 席·月", badge: "團隊",
+        tagline: "讓整個團隊共享一片星空。",
+        features: ["Pro 全部權益 · 按席計費", "Clawbase 團隊 AI 中台", "共享模板庫 + ClawLego 市集", "組織級可觀測性與稽核", "SSO · 角色權限管理", "專屬客戶成功經理"],
+        cta: "購買席位" },
+    ],
+    plans_ent_t: "企業 · 客製部署",
+    plans_ent_p: "私有化 Clawbase、本地大模型、合規與 SLA。為銀行、政企與大型組織量身打造。",
+    plans_ent_b: "聯絡銷售 →",
+    plans_note: "所有價格均以人民幣（CNY）計價並含增值稅（13%）。支援 支付寶 · 微信支付 · 銀行卡（Visa / Mastercard / 銀聯）。訂閱自動依週期續費，可隨時於帳戶中取消；新訂閱自購買之日起 7 天內可申請無理由退款。",
+    s8_label: "下載客戶端", s8_caption: "把 Agent 帶在身上。",
+    dl_intro: "一次註冊，全平台同步。所有客戶端均經 ClawUUID 數位簽章校驗，本地優先、端到端加密。",
+    dl: [
+      { os: "macOS", kind: "桌面", meta: "Apple Silicon · Intel · macOS 13+", ver: "v0.42.0 · 84 MB", cta: "下載 .dmg" },
+      { os: "Windows", kind: "桌面", meta: "Windows 10 / 11 · x64", ver: "v0.42.0 · 96 MB", cta: "下載 .exe" },
+      { os: "Linux", kind: "桌面", meta: ".AppImage · .deb · x64 / ARM", ver: "v0.42.0 · 88 MB", cta: "下載" },
+      { os: "iOS", kind: "行動", meta: "iPhone · iPad · iOS 16+", ver: "App Store", cta: "取得" },
+      { os: "Android", kind: "行動", meta: "Android 10+ · Google Play / APK", ver: "v0.42.0", cta: "取得" },
+      { os: "Web", kind: "網頁", meta: "瀏覽器直達 · 無需安裝", ver: "app.42star.ai", cta: "開啟" },
+    ],
+    dl_note: "下載或使用任一客戶端，即代表你已閱讀並同意《服務條款》與《隱私政策》。系統需求與歷史版本詳見文件中心。",
     foot_p: "為 AI 原生社會而構建的產品矩陣。",
     foot_obs: "天文台 · 開放",
   },
@@ -750,6 +871,7 @@ const T = {
   "en": {
     lang_name: "English",
     nav_vision: "Vision", nav_constellation: "Constellation", nav_embodied: "Embodied", nav_matrix: "Products", nav_manifesto: "Manifesto",
+    nav_plans: "Pricing", nav_download: "Download",
     nav_signin: "Sign in", nav_est: "EST. 2042",
     h_prelude: "VOL. 042 ·  AI NATIVE SOCIETY ·  OPEN BROADCAST",
     h_thesis: "THESIS",
@@ -806,6 +928,37 @@ const T = {
     cta_p: "Sign up and receive an officially issued agent passport, a StarClaw workspace, and your own ClawPkg template. Your agents will handle the rest.",
     cta_b1: "Get my UUID  →", cta_b2: "Talk to an Agent",
     cta_note: "Free during early orbit · No card required",
+    s7_label: "PRICING", s7_caption: "Choose your orbit.",
+    plans_intro: "From a free trial to private enterprise deployment — pay as you grow. Every paid plan can be cancelled anytime and comes with a 7-day no-questions refund.",
+    plans: [
+      { id: "explorer", name: "Explorer", code: "PLAN · FREE", price: "¥0", period: "/ mo", badge: "",
+        tagline: "For your very first agent.",
+        features: ["1 StarClaw workspace", "3 intimate-layer local agents", "Community ClawPkg templates", "200 inferences / day", "Community support"],
+        cta: "Start free" },
+      { id: "cyberself", name: "Cyber-Self", code: "PLAN · PRO", price: "¥42", period: "/ mo", badge: "Most popular",
+        tagline: "A complete cyber-self, for everyone.",
+        features: ["Unlimited local + 12 domain agents", "StarClaw / StarWork / Staryme clients", "Officially issued ClawUUID passport", "10,000 inferences / day", "20% off ClawClip hardware", "Priority support"],
+        cta: "Subscribe Pro", note: "¥42 monthly, or ¥420 / year (save ¥84)" },
+      { id: "constellation", name: "Constellation", code: "PLAN · TEAM", price: "¥168", period: "/ seat·mo", badge: "Team",
+        tagline: "One sky, shared by the whole team.",
+        features: ["Everything in Pro · billed per seat", "Clawbase team AI platform", "Shared template library + ClawLego", "Org-wide observability & audit", "SSO · role-based access", "Dedicated customer success"],
+        cta: "Buy seats" },
+    ],
+    plans_ent_t: "Enterprise · Custom deploy",
+    plans_ent_p: "Private Clawbase, on-prem models, compliance and SLA — tailored for banks, government and large organizations.",
+    plans_ent_b: "Contact sales →",
+    plans_note: "All prices are in Chinese Yuan (CNY), VAT (13%) included. We accept Alipay · WeChat Pay · cards (Visa / Mastercard / UnionPay). Subscriptions renew automatically each cycle and can be cancelled anytime in your account; new subscriptions are eligible for a no-questions refund within 7 days of purchase.",
+    s8_label: "DOWNLOAD", s8_caption: "Carry your agent.",
+    dl_intro: "Sign up once, sync everywhere. Every client is verified by a ClawUUID signature — local-first and end-to-end encrypted.",
+    dl: [
+      { os: "macOS", kind: "Desktop", meta: "Apple Silicon · Intel · macOS 13+", ver: "v0.42.0 · 84 MB", cta: "Get .dmg" },
+      { os: "Windows", kind: "Desktop", meta: "Windows 10 / 11 · x64", ver: "v0.42.0 · 96 MB", cta: "Get .exe" },
+      { os: "Linux", kind: "Desktop", meta: ".AppImage · .deb · x64 / ARM", ver: "v0.42.0 · 88 MB", cta: "Download" },
+      { os: "iOS", kind: "Mobile", meta: "iPhone · iPad · iOS 16+", ver: "App Store", cta: "Get" },
+      { os: "Android", kind: "Mobile", meta: "Android 10+ · Google Play / APK", ver: "v0.42.0", cta: "Get" },
+      { os: "Web", kind: "Web", meta: "Straight from the browser · no install", ver: "app.42star.ai", cta: "Open" },
+    ],
+    dl_note: "By downloading or using any client you agree to the Terms of Service and Privacy Policy. System requirements and past releases are in the docs center.",
     foot_p: "A product matrix for the AI Native society.",
     foot_obs: "OBSERVATORY · OPEN",
   },
@@ -975,6 +1128,8 @@ function TopNav() {
         <a href="#constellation">{t("nav_constellation")}</a>
         <NavProducts label={t("nav_matrix")} />
         <a href="#manifesto">{t("nav_manifesto")}</a>
+        <a href="#plans">{t("nav_plans")}</a>
+        <a href="#download">{t("nav_download")}</a>
       </nav>
       <div className="nav-right">
         <LangSwitcher lang={lang} setLang={setLang} />
@@ -1693,6 +1848,80 @@ function Manifesto() {
   );
 }
 
+function Plans() {
+  const { t } = React.useContext(window.LangContext);
+  const plans = t("plans");
+  const hrefs = {
+    explorer: "https://app.42star.ai/signup",
+    cyberself: "https://app.42star.ai/checkout?plan=pro",
+    constellation: "https://app.42star.ai/checkout?plan=team",
+  };
+  return (
+    <section className="plans" id="plans">
+      <window.SectionHead idx="07" label={t("s7_label")} caption={t("s7_caption")} />
+      <p className="plans-intro">{t("plans_intro")}</p>
+      <div className="plan-grid">
+        {plans.map((p) => {
+          const feature = p.id === "cyberself";
+          return (
+            <div key={p.id} className={"plan-card" + (feature ? " is-feature" : "")}>
+              {p.badge && <div className="plan-badge">{p.badge}</div>}
+              <div className="plan-code">{p.code}</div>
+              <div className="plan-name">{p.name}</div>
+              <div className="plan-price">
+                <span className="plan-amount">{p.price}</span>
+                <span className="plan-period">{p.period}</span>
+              </div>
+              <div className="plan-tagline">{p.tagline}</div>
+              <ul className="plan-feats">
+                {p.features.map((f, i) => <li key={i}><span>✦</span>{f}</li>)}
+              </ul>
+              <a className={"plan-cta" + (feature ? " is-primary" : "")} href={hrefs[p.id]}>{p.cta}</a>
+              {p.note && <div className="plan-note">{p.note}</div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="plan-ent">
+        <div>
+          <div className="plan-ent-t">{t("plans_ent_t")}</div>
+          <p className="plan-ent-p">{t("plans_ent_p")}</p>
+        </div>
+        <a className="plan-cta" href="mailto:sales@42star.ai">{t("plans_ent_b")}</a>
+      </div>
+      <div className="plan-billnote">{t("plans_note")}</div>
+    </section>
+  );
+}
+
+function Download() {
+  const { t } = React.useContext(window.LangContext);
+  const items = t("dl");
+  const href = (os) => os === "Web" ? "https://app.42star.ai" : ("https://app.42star.ai/download/" + os.toLowerCase());
+  return (
+    <section className="download" id="download">
+      <window.SectionHead idx="08" label={t("s8_label")} caption={t("s8_caption")} />
+      <p className="dl-intro">{t("dl_intro")}</p>
+      <div className="dl-grid">
+        {items.map((d, i) => (
+          <div key={i} className="dl-card">
+            <div className="dl-os">
+              <span className="dl-kind">{d.kind}</span>
+              <span className="dl-os-name">{d.os}</span>
+            </div>
+            <div className="dl-meta">{d.meta}</div>
+            <div className="dl-foot">
+              <span className="dl-ver">{d.ver}</span>
+              <a className={"dl-btn" + (d.os === "Web" ? " is-primary" : "")} href={href(d.os)}>{d.cta} →</a>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="dl-note">{t("dl_note")}</div>
+    </section>
+  );
+}
+
 function CTABanner() {
   const { t } = React.useContext(window.LangContext);
   const ct = t("cta_t");
@@ -1754,7 +1983,7 @@ function Footer() {
       <div className="foot-bot mono dim">
         <span>© 2042–∞  42Star.ai  ·  Chengdu · Hangzhou · Orbit</span>
         <span>v0.42.0</span>
-        <span>Privacy · Terms · Charter</span>
+        <span>Privacy · Terms · Refund · Charter</span>
       </div>
     </footer>
   );
@@ -1786,6 +2015,8 @@ function App() {
         <window.Matrix />
         <window.Why42 />
         <Manifesto />
+        <Plans />
+        <Download />
         <CTABanner />
         <Footer />
       </main>
